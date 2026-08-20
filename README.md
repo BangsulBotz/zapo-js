@@ -1,7 +1,7 @@
 # Zapo Bot Starter
 
 <p align="center">
-  <img src="https://github.com/vinikjkkj.png?size=180" width="120" alt="Zapo">
+  <img src="[https://github.com/vinikjkkj.png?size=180](https://raw.githubusercontent.com/vinikjkkj/zapo/master/.github/assets/logo.png)" width="120" alt="Zapo">
 </p>
 
 <h3 align="center">A production-oriented WhatsApp bot base built on Zapo-JS</h3>
@@ -750,26 +750,46 @@ This gives the application a lower-level escape hatch while keeping the normal Z
 Conceptually:
 
 ```js
-await sock.message.send(m.chat, {
-    interactiveMessage: {
-        body: {
-            text: 'Hello'
-        },
-        nativeFlowMessage: {
-            buttons: []
-        }
+await sock.message.send(jid, {
+  interactiveMessage: {
+    body: {
+      text: "may I ask for your contact?"
     },
-
-    customNodes: [
+    nativeFlowMessage: {
+      buttons: [
         {
-            tag: 'example',
-            attrs: {
-                foo: 'bar'
-            },
-            content: []
+          name: "request_contact_info"
         }
-    ]
+      ],
+      messageParamsJson: JSON.stringify({})
+    }
+  }
+}, {
+  customNodes: [
+    {
+      tag: "biz",
+      attrs: {},
+      content: [
+        {
+          tag: "interactive",
+          attrs: {
+            type: "native_flow",
+            v: "1"
+          },
+          content: [
+            {
+              tag: "native_flow",
+              attrs: {
+                name: "request_contact_info"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
 })
+
 ```
 
 The exact node structure depends on the WhatsApp message you are trying to reproduce.
