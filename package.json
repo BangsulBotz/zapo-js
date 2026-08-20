@@ -1,0 +1,26 @@
+{
+  "name": "zapo-bot",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Bot wa zapo-js",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "postinstall": "node patch.js"
+  },
+  "dependencies": {
+    "@zapo-js/media-utils": "latest",
+    "@zapo-js/store-sqlite": "latest",
+    "axios": "latest",
+    "better-sqlite3": "latest",
+    "chalk": "latest",
+    "file-type": "latest",
+    "fluent-ffmpeg": "latest",
+    "qrcode-terminal": "latest",
+    "sharp": "latest",
+    "zapo-js": "latest"
+  },
+  "trustedDependencies": [
+    "zapo-js"
+  ]
+}
