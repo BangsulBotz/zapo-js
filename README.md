@@ -13,7 +13,8 @@
 <p align="center">
   <a href="https://zapo.to">Documentation</a> ·
   <a href="https://github.com/vinikjkkj/zapo">Zapo-JS</a> ·
-  <a href="https://www.npmjs.com/package/zapo-js">NPM</a>
+  <a href="https://www.npmjs.com/package/zapo-js">NPM</a> ·
+  <a href="https://whatsapp.com/channel/0029VbACHzn4inokBZqMsq2W">WA Channel</a>
 </p>
 
 ---
