@@ -1,7 +1,7 @@
 # Zapo Bot Starter
 
 <p align="center">
-  <img src="[https://github.com/vinikjkkj.png?size=180](https://raw.githubusercontent.com/vinikjkkj/zapo/master/.github/assets/logo.png)" width="120" alt="Zapo">
+  <img src="[https://github.com/vinikjkkj.png?size=180](https://raw.githubusercontent.com/vinikjkkj/zapo/master/.github/assets/logo.png)" width="180" alt="Zapo">
 </p>
 
 <h3 align="center">A production-oriented WhatsApp bot base built on Zapo-JS</h3>
