@@ -17,9 +17,9 @@ export const settings = {
   eventAll: false,     // log RAW semua event
 
   ownerName: 'ghofar',
-  owner: '6281234567890',
+  owner: '6281234567890', //628xxx (contoh: 6281234567890)
   botName: 'bangsulbotz',
-  botNumber: '6281234567890',
+  botNumber: '', //628xxx (contoh: 6281234567890)
   jidGroup: '123@g.us',  //id grup mu. fitur backup dioper kesinii. bukan chat pribadi. 
 
   prefixes: ['.', '#', '!', '/'],
