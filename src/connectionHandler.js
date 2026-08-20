@@ -59,9 +59,14 @@ async function requestPairing(sock) {
 
     const formatted = code?.match(/.{1,4}/g)?.join('-') ?? code
 
-    console.log(chalk.bgGreen.black('\n   KODE PAIRING ANDA:   '))
-    console.log(chalk.bgWhite.black.bold(`      ${formatted}      `))
-    console.log(chalk.yellow('\nPilih: Scan QR di atas ATAU tautkan dengan kode pairing.\n'))
+    console.log(chalk.bgMagenta.white.bold('\n   KODE PAIRING ANDA:   '))
+    console.log(chalk.bgBlack.greenBright.bold(`      ${formatted}      `))
+
+    if (config.usePairingCode) {
+      console.log(chalk.yellow('\nTautkan HP dengan kode pairing di atas.\n'))
+    } else {
+      console.log(chalk.yellow('\nPilih: Scan QR di atas ATAU tautkan dengan kode pairing.\n'))
+    }
   } catch (err) {
     console.log(chalk.red('[Pairing] Gagal:'), err?.message || err)
   }
@@ -127,18 +132,20 @@ export function connectionHandler(sock) {
   })
 
   sock.on('auth_qr', ({ qr, ttlMs }) => {
-    console.log(chalk.cyan.bold('\n── QR CODE ──'))
-    qrcode.generate(qr, { small: true })
-    console.log(chalk.gray(`QR berlaku ${ttlMs}ms`))
+    if (!config.usePairingCode) {
+      console.log(chalk.cyan.bold('\n── QR CODE ──'))
+      qrcode.generate(qr, { small: true })
+      console.log(chalk.gray(`QR berlaku ${ttlMs}ms`))
+    }
 
-    if (!isPairingRequested) {
+    if (config.usePairingCode && !isPairingRequested) {
       isPairingRequested = true
       void requestPairing(sock)
     }
   })
 
   sock.on('auth_pairing_required', () => {
-    if (!isPairingRequested) {
+    if (config.usePairingCode && !isPairingRequested) {
       isPairingRequested = true
       void requestPairing(sock)
     }
