@@ -190,6 +190,8 @@ function buildCategoryMenuText(groups, categoryKey, usedPrefix) {
 export default {
     command: 'menu',
     category: 'bot',
+    description: 'Menampilkan daftar menu fitur bot berdasarkan kategori.',
+    help: '`[kategori|all]`',
     typing: true,
 
     async execute(m, { plugins, sock }) {
@@ -216,148 +218,7 @@ export default {
         }
         const hasil = header + '\n\n' + body
         const thumbnailBase64 = await getThumbnailBase64(sock, m)
-        await m.reply(m.chat, {
-            extendedTextMessage: {
-                endCardTiles: [],
-                text: `https://github.com/bangsulbotz/zapo
-${hasil}`,
-                matchedText: "https://github.com/bangsulbotz/zapo",
-                description: buildDescription(),
-                title: m.pushName,
-                previewType: 7,
-                contextInfo: {
-                    mentionedJid: [m.sender],
-                    groupMentions: [],
-                    statusAttributions: []
-                },
-                jpegThumbnail: thumbnailBase64,
-                inviteLinkGroupTypeV2: 0
-            }
-        })
-    }
-                }        if (seen.has(plugin)) continue
-        seen.add(plugin)
-        unique.push(plugin)
-    }
-
-    return unique
-}
-
-function groupByCategory(pluginList) {
-    const groups = new Map()
-
-    for (const plugin of pluginList) {
-        if (plugin.hidden) continue
-
-        const category = plugin.category || 'root'
-        if (!groups.has(category)) groups.set(category, [])
-        groups.get(category).push(plugin)
-    }
-
-    for (const list of groups.values()) {
-        list.sort((a, b) => a.command.localeCompare(b.command))
-    }
-
-    return groups
-}
-
-function sortedCategoryKeys(groups) {
-    return [...groups.keys()].sort((a, b) => {
-        if (a === 'root') return 1
-        if (b === 'root') return -1
-        return a.localeCompare(b)
-    })
-}
-
-function buildHeader(m) {
-    const prefix = config.noprefix ? 'no prefix' : config.prefixes.join(' ')
-
-    return [
-        `Halo *@${m.sender.split('@')[0]}* 😇`,
-        `\`\`\`Prefix :\`\`\` \`${prefix}\``,
-        `\`\`\`Node   :\`\`\` \`${getRuntime()}\``,
-        `\`\`\`Library:\`\`\` \`zapo-js v${zapoVersion}\``
-    ].join('\n')
-}
-
-function buildCategoryListText(groups, usedPrefix, command) {
-    const lines = ['`Kategori Menu`']
-
-    for (const category of sortedCategoryKeys(groups)) {
-        const jumlah = groups.get(category).length
-        lines.push(`- ${usedPrefix}${formatCategoryName(category)} \`(${jumlah} fitur)\``)
-    }
-
-    lines.push('')
-    lines.push('`Catatan:`')
-    lines.push('> Menampilkan Semua Fitur:')
-    lines.push(`> Ketik \`${usedPrefix}${command} all\``)
-    lines.push('> Menampilkan Per Kategori:')
-    lines.push(`> Ketik \`${usedPrefix}${command} <kategori>\``)
-
-    return lines.join('\n')
-}
-
-function buildAllMenuText(groups, usedPrefix) {
-    const lines = []
-
-    for (const category of sortedCategoryKeys(groups)) {
-        const items = groups.get(category)
-        lines.push(`\`${formatCategoryName(category)}\` \`(${items.length} fitur)\``)
-
-        for (const plugin of items) {
-            lines.push(`- ${usedPrefix}${plugin.command}`)
-        }
-
-        lines.push('')
-    }
-
-    lines.push(`\`Total: ${groups.size ? [...groups.values()].reduce((a, b) => a + b.length, 0) : 0} Fitur\``)
-
-    return lines.join('\n').trim()
-}
-
-function buildCategoryMenuText(groups, categoryKey, usedPrefix) {
-    const items = groups.get(categoryKey)
-    const lines = [`\`${formatCategoryName(categoryKey)}\` \`(${items.length} fitur)\``, '']
-
-    for (const plugin of items) {
-        lines.push(`- ${usedPrefix}${plugin.command}`)
-    }
-
-    return lines.join('\n')
-}
-
-export default {
-    command: 'menu',
-    category: 'bot',
-    typing: true,
-
-    async execute(m, { plugins, sock }) {
-        const pluginList = uniquePlugins(plugins)
-        const groups = groupByCategory(pluginList)
-        const arg = (m.args[0] || '').toLowerCase()
-        const usedPrefix = m.prefix
-        const header = buildHeader(m)
-
-        let body
-
-        if (!arg) {
-            body = buildCategoryListText(groups, usedPrefix, m.command)
-        } else if (arg === 'all') {
-            body = buildAllMenuText(groups, usedPrefix)
-        } else {
-            const matchedKey = [...groups.keys()].find((key) => key.toLowerCase() === arg)
-
-            if (!matchedKey) {
-                return m.reply(`Kategori "${arg}" tidak ditemukan. Ketik ${usedPrefix}${m.command} untuk melihat daftar kategori.`)
-            }
-
-            body = buildCategoryMenuText(groups, matchedKey, usedPrefix)
-        }
-        const hasil = header + '\n\n' + body
-        const thumbnailBase64 = await getThumbnailBase64(sock, m)
-        await m.reply(m.chat, {
+        await m.reply({
             extendedTextMessage: {
                 endCardTiles: [],
                 text: `https://github.com/bangsulbotz/zapo
