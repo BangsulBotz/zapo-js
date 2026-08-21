@@ -5,15 +5,15 @@ import { formatBytes, formatDuration } from '../../lib/utils.js'
 export default {
   command: 'runtime',
   alias: ['rt', 'uptime', 'status'],
-  category:'bot',
-  description: `> Tampilkan *status aktif* bot.
+  category: 'bot',
+  description: `Tampilkan *status aktif* bot.
 
 \`Cara Penggunaan:\`
 > ketik: \`.runtime\``,
   typing: true,
 
   async execute(m) {
-    const uptimeStr = formatDuration(Math.floor(process.uptime())) || 'kurang dari 1 detik'
+    const uptimeStr = formatDuration(Math.floor(process.uptime()))
     const mem = process.memoryUsage()
 
     const totalMem = os.totalmem()
