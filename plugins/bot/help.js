@@ -14,10 +14,14 @@ function formatAliases(plugin) {
 
 export default {
   command: 'help',
-  alias: ['h', 'command'],
+  alias: ['command'],
   category: 'bot',
-  description: 'Menampilkan detail command atau alias plugin.',
-  help: '`<command atau alias>`',
+  description: `Menampilkan detail command atau alias plugin.
+
+*Format Penggunaan:*
+> \`Menampilkan informasi plugin\`
+> .help <command/alias>`,
+  help: '`<command/alias>`',
 
   async execute(m, { plugins }) {
     const requested = m.args?.[0]?.toLowerCase()

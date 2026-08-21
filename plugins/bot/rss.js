@@ -5,10 +5,7 @@ export default {
   command: 'memory',
   alias: ['mem', 'ram', 'rss'],
   category: 'bot',
-  description: `Tampilkan detail penggunaan *RAM* bot.
-
-\`Cara Penggunaan:\`
-> langsung kirim perintah: \`.memory\``,
+  description: 'Menampilkan detail penggunaan memory bot.',
   typing: true,
   async execute(m) {
     const mem = process.memoryUsage()

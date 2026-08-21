@@ -2,7 +2,7 @@
 
 export default {
     command: 'ping',
-    alias: ['test'],
+    alias: ['test', 'p2', 'mbut'],
     category: 'bot',
     description: 'Cek latency bot.',
 

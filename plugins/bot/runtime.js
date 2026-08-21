@@ -6,10 +6,7 @@ export default {
   command: 'runtime',
   alias: ['rt', 'uptime', 'status'],
   category: 'bot',
-  description: `Tampilkan *status aktif* bot.
-
-\`Cara Penggunaan:\`
-> ketik: \`.runtime\``,
+  description: 'Menampilkan status aktif dan penggunaan resource bot.',
   typing: true,
 
   async execute(m) {
