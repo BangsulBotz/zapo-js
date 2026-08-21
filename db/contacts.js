@@ -37,10 +37,21 @@ const stmtInsert = db.prepare(`
     VALUES (?, ?, ?, ?, ?)
 `)
 const stmtUpdateName = db.prepare(`UPDATE contacts SET push_name = ?, updated_at = ? WHERE id = ?`)
+const contactCache = new Map()
+
+function cacheContact(row) {
+    if (!row) return null
+    if (row.lid_jid) contactCache.set(row.lid_jid, row)
+    if (row.pn_jid) contactCache.set(row.pn_jid, row)
+    return row
+}
 
 function findContactRaw(jid) {
     if (!jid) return null
-    return (jid.endsWith('@lid') ? stmtFindByLid.get(jid) : stmtFindByPn.get(jid)) ?? null
+    if (contactCache.has(jid)) return contactCache.get(jid)
+
+    const row = (jid.endsWith('@lid') ? stmtFindByLid.get(jid) : stmtFindByPn.get(jid)) ?? null
+    return cacheContact(row)
 }
 
 export function saveOrUpdateContact({ lidJid, pnJid, pushName }) {
@@ -49,11 +60,19 @@ export function saveOrUpdateContact({ lidJid, pnJid, pushName }) {
     const cleanName = pushName?.trim() || null
     const now = Math.floor(Date.now() / 1000)
 
-    const existing = stmtFindByLid.get(lidJid) ?? stmtFindByPn.get(pnJid)
+    const existing = findContactRaw(lidJid) ?? findContactRaw(pnJid)
 
     if (!existing) {
         try {
             const info = stmtInsert.run(lidJid, pnJid, cleanName, now, now)
+            cacheContact({
+                id: info.lastInsertRowid,
+                lid_jid: lidJid,
+                pn_jid: pnJid,
+                push_name: cleanName,
+                created_at: now,
+                updated_at: now
+            })
             console.log(chalk.green(`[CONTACT] Baru disimpan: ${cleanName || '(tanpa nama)'} — ${pnJid}`))
             return { id: info.lastInsertRowid, created: true, updated: false }
         } catch (err) {
@@ -64,6 +83,8 @@ export function saveOrUpdateContact({ lidJid, pnJid, pushName }) {
 
     if (cleanName && cleanName !== existing.push_name) {
         stmtUpdateName.run(cleanName, now, existing.id)
+        existing.push_name = cleanName
+        existing.updated_at = now
         console.log(chalk.cyan(`[CONTACT] Nama diupdate: "${existing.push_name ?? '-'}" -> "${cleanName}" (${pnJid})`))
         return { id: existing.id, created: false, updated: true }
     }
