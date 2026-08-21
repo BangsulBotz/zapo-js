@@ -24,13 +24,16 @@ function resolveMediaTarget(m, sock) {
 export default {
     command: 'up',
     alias: ['upload'],
-    help: '`(reply)`',
     category: 'konvert',
-    description: `Upload media (reply/caption) ke tmpfile.link, hasil link dengan tombol salin.
+    help: '`(reply)`',
+    description: `Mengupload media ke tmpfile.link dan mengirimkan link hasil upload.
 
-\`Cara Penggunaan:\`
-> reply media lalu ketik: \`.up\`
-> atau kirim media dengan caption: \`.up\``,
+*Format Penggunaan:*
+> \`Reply pesan media lalu ketik:\`
+> .up
+
+> \`Kirim media dengan caption command:\`
+> .up`,
     typing: true,
 
     async execute(m, { sock }) {

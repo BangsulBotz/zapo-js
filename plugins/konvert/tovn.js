@@ -1,11 +1,13 @@
-// plugins/tovn.js
+// plugins/konvert/tovn.js
 
 export default {
   command: 'tovn',
   alias: ['tovoice', 'vn'],
-  description: 'Ubah audio/video/document menjadi voice note.',
+  category: 'konvert',
+  description: 'Mengubah audio, video, atau document menjadi voice note.\n\n' +
+    '*Format Penggunaan:*\n' +
+    '> `Reply audio, video, atau document lalu ketik:`\n> .tovn',
   help: '`(reply)`',
-  category:'konvert',
   typing: true,
   wait: true,
 

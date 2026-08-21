@@ -4,20 +4,16 @@ import { buildQuoteContext } from '../../lib/utils.js'
 export default {
   command: 'idgc',
   alias: ['idgrup', 'idgroup', 'grupid', 'groupid'],
+  category: 'grup',
   description: `Tampilkan *ID Grup* dalam bentuk tombol copy.
 
 \`Cara Penggunaan:\`
 > langsung kirim perintah: \`.idgc\` (hanya di dalam grup)`,
   groupOnly: true,
-  category:'grup',
-  typing:true,
+  typing: true,
 
   async execute(m) {
-    if (!m.isGroup) {
-      return m.reply('Perintah ini cuma bisa dipakai di dalam grup ya kak.')
-    }
-
-    await m.reply(m.chat,{
+    await m.reply({
       interactiveMessage: {
         header: { title: '📍 Info Group ID', hasMediaAttachment: false },
         body: {
