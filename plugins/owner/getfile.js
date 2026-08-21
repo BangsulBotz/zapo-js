@@ -47,14 +47,15 @@ function detectMime(filePath) {
 export default {
   command: 'getfile',
   alias: ['gf', 'ambilfile', 'sendfile'],
-  category:'owner',
-  description: 'Mengirim file dari server bot sebagai document\n\n.getfile <path file>\nContoh: .getfile ./plugins/owner/getfile.js',
+  category: 'owner',
+  description: 'Mengirim file dari server bot sebagai document.\n\n' +
+    '*Format Penggunaan:*\n' +
+    '> `Mengirim file dari path tertentu`\n> .getfile <path file>',
   help: '`<path file>`',
   typing: true,
   onlyOwner: true,
 
-  async execute(m, context) {
-    const { args } = context
+  async execute(m, { args }) {
 
     const filePathInput = args.join(' ').trim()
     if (!filePathInput) {

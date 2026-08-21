@@ -28,8 +28,8 @@ function buildExcludeArgs() {
 export default {
   command: 'backup',
   alias: ['getsc', 'getscript', 'backupproject'],
-  category:'owner',
-  description: `Backup project & kirim ke grup tujuan (\`config.jidGroup\`).\n\nExclude folder/file diatur di \`lib/backupExclude.js\`.`,
+  category: 'owner',
+  description: 'Membuat backup project dan mengirimkannya ke grup tujuan.',
   help: '`(tanpa argumen)`',
   onlyOwner: true,
   typing: true,

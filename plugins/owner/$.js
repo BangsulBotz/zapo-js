@@ -8,8 +8,10 @@ const execPromise = promisify(exec)
 export default {
   command: '$',
   alias: ['shell', 'exec'],
-  category:'owner',
-  description: 'Menjalankan perintah terminal/shell.',
+  category: 'owner',
+  description: 'Menjalankan perintah terminal atau shell.\n\n' +
+    '*Format Penggunaan:*\n' +
+    '> `Menjalankan perintah shell`\n> .$ <command>',
   help: '`<command>`',
   onlyOwner: true,
   wait: true,

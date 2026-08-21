@@ -4,7 +4,7 @@ import { createRequire } from 'module'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 import { buildEvalContext } from '../../handler.js'
-import { transformImports, createFakeConsole, formatEvalResult, formatEvalError } from '../../lib/utils.js'
+import { transformImports, createFakeConsole, formatEvalResult, formatEvalError, executeAsyncCode } from '../../lib/utils.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -46,12 +46,11 @@ async function getCodeFromQuoted(m, sock) {
 export default {
   command: 'run',
   alias: ['runcode', 'runfile', 'execfile'],
-  category:'owner',
-  description: `Jalankan kode JavaScript dari *pesan* atau *file document* yang di-reply (owner only).
-
-\`Cara Penggunaan:\`
-> reply pesan/document berisi code, lalu ketik: \`.run\``,
-  help: '`(reply pesan/document)` lalu ketik `.run`',
+  category: 'owner',
+  description: 'Menjalankan kode JavaScript dari pesan atau document yang di-reply.\n\n' +
+    '*Format Penggunaan:*\n' +
+    '> `Reply pesan atau document berisi code lalu ketik:`\n> .run',
+  help: '`(reply pesan/document)`',
   onlyOwner: true,
 
   async execute(m, { sock }) {
@@ -73,20 +72,7 @@ export default {
       }
 
       const transformed = transformImports(code)
-
-      const header = `
-        const { m, sock, quoted, q, jid, from, sender, me, console, process, Buffer, require, importModule, __dirname, __filename, util, config } = ctx;
-      `
-
-      let fn
-      try {
-        fn = new Function('ctx', `${header}\nreturn (async () => { return (\n${transformed}\n) })();`)
-      } catch (buildErr) {
-        if (!(buildErr instanceof SyntaxError)) throw buildErr
-        fn = new Function('ctx', `${header}\nreturn (async () => {\n${transformed}\n})();`)
-      }
-
-      let evaled = await fn(ctx)
+      let evaled = await executeAsyncCode(transformed, ctx)
       if (evaled instanceof Promise) evaled = await evaled
 
       const output = formatEvalResult(evaled, consoleOutput)

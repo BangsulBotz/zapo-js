@@ -4,12 +4,14 @@ export default {
   command: 'getthumbnail',
   alias: ['gt', 'getthumb'],
   category: 'owner',
-  description: 'Ambil thumbnail full dari pesan yang di-reply',
+  description: 'Mengambil thumbnail dari pesan yang di-reply.\n\n' +
+    '*Format Penggunaan:*\n' +
+    '> `Reply pesan yang memiliki thumbnail lalu ketik:`\n> .getthumbnail',
   onlyOwner: true,
   typing: true,
 
   async execute(m, { sock }) {
-    if (!m.quoted) return m.reply(m.chat, '❌ Reply pesan yang mau diambil thumbnail-nya')
+    if (!m.quoted) return m.reply('❌ Reply pesan yang mau diambil thumbnail-nya')
 
     const content = m.quoted.full?.[m.quoted.type] || {}
     const adReply = content.contextInfo?.externalAdReply
@@ -23,7 +25,7 @@ export default {
           thumbnailEncSha256: content.thumbnailEncSha256
         })
 
-        return m.reply(m.chat, {
+        return m.reply({
           type: 'image',
           media: buffer,
           mimetype,
@@ -37,7 +39,7 @@ export default {
 
     const url = adReply?.thumbnailUrl || adReply?.sourceUrl
     if (url && /^https?:\/\//.test(url)) {
-      return m.reply(m.chat, {
+      return m.reply({
         type: 'image',
         media: url,
         caption: `✅ *Source:* External URL\n🔗 ${url}`
@@ -46,7 +48,7 @@ export default {
 
     const jpegThumbnail = adReply?.jpegThumbnail || content.jpegThumbnail
     if (jpegThumbnail) {
-      return m.reply(m.chat, {
+      return m.reply({
         type: 'image',
         media: jpegThumbnail,
         mimetype: 'image/jpeg',
@@ -54,6 +56,6 @@ export default {
       })
     }
 
-    return m.reply(m.chat, '❌ Thumbnail tidak ditemukan.')
+    return m.reply('❌ Thumbnail tidak ditemukan.')
   }
 }

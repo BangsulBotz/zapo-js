@@ -4,15 +4,15 @@ import fs from 'fs'
 import path from 'path'
 import { formatBytes } from '../../lib/utils.js'
 
-function getFolderSize(folderPath) {
+async function getFolderSize(folderPath) {
   let total = 0
-  const entries = fs.readdirSync(folderPath, { withFileTypes: true })
+  const entries = await fs.promises.readdir(folderPath, { withFileTypes: true })
   for (const entry of entries) {
     const full = path.join(folderPath, entry.name)
     if (entry.isDirectory()) {
-      total += getFolderSize(full)
+      total += await getFolderSize(full)
     } else if (entry.isFile()) {
-      total += fs.statSync(full).size
+      total += (await fs.promises.stat(full)).size
     }
   }
   return total
@@ -21,8 +21,11 @@ function getFolderSize(folderPath) {
 export default {
   command: 'listfile',
   alias: ['ls', 'dir', 'listdir', 'cekfolder'],
-  category:'owner',
-  description: 'Menampilkan daftar file & folder beserta ukurannya\n\n.listfile <path>\n.listfile → default root project',
+  category: 'owner',
+  description: 'Menampilkan daftar file dan folder beserta ukurannya.\n\n' +
+    '*Format Penggunaan:*\n' +
+    '> `Menampilkan isi directory tertentu`\n> .listfile <path>\n\n' +
+    '> `Menampilkan isi root project`\n> .listfile',
   help: '`<directory>`',
   onlyOwner: true,
 
@@ -63,7 +66,7 @@ export default {
         const stat = await fs.promises.stat(itemPath)
 
         if (stat.isDirectory()) {
-          const size = getFolderSize(itemPath)
+          const size = await getFolderSize(itemPath)
           folders.push({ name: item, size: formatBytes(size) })
           totalSize += size
         } else if (stat.isFile()) {

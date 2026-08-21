@@ -6,8 +6,8 @@ import path from 'path'
 export default {
   command: 'restart',
   alias: ['restartbot', 'botrs', 'botres', 'resbot'],
-  category:'owner',
-  description: 'Restart the bot process.',
+  category: 'owner',
+  description: 'Memulai ulang process bot.',
   onlyOwner: true,
 
   async execute(m) {

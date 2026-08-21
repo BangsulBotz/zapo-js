@@ -1,17 +1,17 @@
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 import { buildEvalContext } from '../../handler.js'
-import { transformImports, createFakeConsole, formatEvalResult, formatEvalError } from '../../lib/utils.js'
+import { transformImports, createFakeConsole, formatEvalResult, formatEvalError, executeAsyncCode } from '../../lib/utils.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
-const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor
-
 export default {
   command: '>',
   alias: ['eval', 'ev', '=>', '!!'],
   category: 'owner',
-  description: 'Jalankan kode JavaScript (owner only)',
+  description: 'Menjalankan kode JavaScript secara langsung.\n\n' +
+    '*Format Penggunaan:*\n' +
+    '> `Menjalankan kode JavaScript`\n> .eval <code>',
   help: '`<code>`',
   onlyOwner: true,
 
@@ -21,17 +21,8 @@ export default {
 
     const { consoleOutput, fakeConsole } = createFakeConsole()
     const ctx = { ...buildEvalContext(m, sock), console: fakeConsole, __dirname, __filename }
-    const names = Object.keys(ctx)
-    const values = Object.values(ctx)
-
     try {
-      let fn
-      try {
-        fn = new AsyncFunction(...names, `return (\n${code}\n)`)
-      } catch {
-        fn = new AsyncFunction(...names, code)
-      }
-      const result = await fn(...values)
+      const result = await executeAsyncCode(code, ctx)
 
       const isPlainJson =
         result !== null &&

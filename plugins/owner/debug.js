@@ -6,8 +6,12 @@ import { buildQuoteContext } from '../../lib/utils.js'
 export default {
   command: 'debug',
   alias: ['debuglog', 'eventlog'],
-  category:'owner',
-  description: 'Pengaturan event logger debug',
+  category: 'owner',
+  description: 'Mengatur event logger debug bot.\n\n' +
+    '*Format Penggunaan:*\n' +
+    '> `Menampilkan status debug`\n> .debug\n\n' +
+    '> `Mengubah status event message`\n> .debug message <on/off>\n\n' +
+    '> `Mengubah status semua event`\n> .debug all <on/off>',
   onlyOwner: true,
 
   async execute(m, { args }) {

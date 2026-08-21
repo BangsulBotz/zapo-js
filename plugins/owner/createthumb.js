@@ -5,22 +5,17 @@ import { config } from '../../settings.js'
 export default {
   command: 'ct',
   alias: ['createthumbnail'],
-  category:'owner',
-  description: `Buat thumbnail preview kustom dari URL atau reply gambar, bisa tambah favicon opsional.
-
-Format:
-ct <url>
-ct <url>, <url favicon>
-reply gambar lalu: ct
-reply gambar lalu: ct ,<url favicon>
-
-Koma pemisah antara thumbnail utama dan favicon.`,
+  category: 'owner',
+  description: 'Membuat thumbnail preview kustom dari URL atau reply gambar.\n\n' +
+    '*Format Penggunaan:*\n' +
+    '> `Menggunakan URL gambar`\n> .ct <url>\n\n' +
+    '> `Menggunakan URL gambar dan favicon`\n> .ct <url>, <url favicon>\n\n' +
+    '> `Menggunakan gambar yang di-reply`\n> .ct',
   help: '(reply/url)',
   typing: true,
   wait: true,
 
-  async execute(m, context) {
-    const { sock, args } = context
+  async execute(m, { sock, args }) {
 
     const raw = args.join(' ')
     const [rawMain, rawFavicon] = raw.split(',').map(s => s?.trim())
@@ -53,7 +48,7 @@ Koma pemisah antara thumbnail utama dan favicon.`,
 
     const targetUrl = 'https://chat.whatsapp.com'
 
-    await m.reply(m.chat, {
+    await m.reply({
       extendedTextMessage: {
         title: 'ini Title',
         description: 'ini deskripsi',

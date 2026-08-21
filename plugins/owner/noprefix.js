@@ -5,8 +5,11 @@ import { config, updateConfig } from '../../settings.js'
 export default {
   command: 'noprefix',
   alias: ['nopref'],
-  category:'owner',
-  description: 'Toggle no-prefix mode.',
+  category: 'owner',
+  description: 'Mengaktifkan atau menonaktifkan mode tanpa prefix.\n\n' +
+    '*Format Penggunaan:*\n' +
+    '> `Mengaktifkan mode tanpa prefix`\n> .noprefix on\n\n' +
+    '> `Menonaktifkan mode tanpa prefix`\n> .noprefix off',
   onlyOwner: true,
 
   async execute(m, { args }) {

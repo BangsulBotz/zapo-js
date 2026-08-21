@@ -2,7 +2,7 @@
 
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { loadPlugins } from '../../lib/loadPlugins.js'
+import { reloadGlobalPlugins } from '../../lib/loadPlugins.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PLUGINS_DIR = path.resolve(__dirname, '..')
@@ -10,24 +10,15 @@ const PLUGINS_DIR = path.resolve(__dirname, '..')
 export default {
   command: 'reload',
   alias: ['rld', 'reloadplugins'],
-  category:'owner',
-  description: 'Reload all plugins.',
+  category: 'owner',
+  description: 'Memuat ulang seluruh plugin bot.',
   onlyOwner: true,
 
   async execute(m) {
     const start = Date.now()
 
     try {
-      const res = await loadPlugins(PLUGINS_DIR)
-
-      if (!(global.plugins instanceof Map)) {
-        global.plugins = new Map()
-      }
-      
-      global.plugins.clear()
-      for (const [key, val] of res.temp) {
-        global.plugins.set(key, val)
-      }
+      const res = await reloadGlobalPlugins(PLUGINS_DIR)
 
       const timeTaken = Date.now() - start
 

@@ -4,8 +4,11 @@ import { config, updateSetting } from '../../settings.js'
 export default {
   command: 'self',
   alias: ['selfbot', 'modebot'],
-  category:'owner',
-  description: 'Toggle self mode - restrict the bot to owner only.',
+  category: 'owner',
+  description: 'Mengaktifkan atau menonaktifkan mode self bot.\n\n' +
+    '*Format Penggunaan:*\n' +
+    '> `Mengaktifkan self mode`\n> .self on\n\n' +
+    '> `Menonaktifkan self mode`\n> .self off',
   onlyOwner: true,
 
   async execute(m, { args }) {

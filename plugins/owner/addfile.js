@@ -50,8 +50,11 @@ function extractMediaMessage(msg) {
 export default {
   command: 'addfile',
   alias: ['simpanfile', 'svfile'],
-  category:'owner',
-  description: 'Menyimpan media/file apa saja yang direply ke directory tertentu',
+  category: 'owner',
+  description: 'Menyimpan media atau file yang di-reply ke directory tertentu.\n\n' +
+    '*Format Penggunaan:*\n' +
+    '> `Reply media lalu simpan ke directory default`\n> .addfile\n\n' +
+    '> `Reply media lalu simpan ke directory tertentu`\n> .addfile <directory>',
   help: '`(reply)`',
   onlyOwner: true,
 
