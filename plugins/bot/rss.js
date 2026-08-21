@@ -1,15 +1,15 @@
-// plugins/bot/memory.js
+// plugins/bot/rss.js
 import { formatBytes } from '../../lib/utils.js'
 
 export default {
   command: 'memory',
   alias: ['mem', 'ram', 'rss'],
+  category: 'bot',
   description: `Tampilkan detail penggunaan *RAM* bot.
 
 \`Cara Penggunaan:\`
 > langsung kirim perintah: \`.memory\``,
   typing: true,
-  category: 'bot',
   async execute(m) {
     const mem = process.memoryUsage()
     const lines = Object.entries(mem)
