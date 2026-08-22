@@ -5,7 +5,6 @@ import path from 'path'
 import { createStore, WaClient } from 'zapo-js'
 import { createSqliteStore } from '@zapo-js/store-sqlite'
 import { createMediaProcessor } from '@zapo-js/media-utils'
-import { config } from '../settings.js'
 import { attachWrappers } from '../lib/wrapper.js'
 
 process.on('uncaughtException', (err) => {
@@ -17,6 +16,7 @@ process.on('unhandledRejection', (reason) => {
 })
 
 const SESSION_DB_PATH = 'session/session.sqlite'
+const SESSION_ID = 'default'
 
 export function createSocket() {
   const sessionDir = path.dirname(SESSION_DB_PATH)
@@ -57,7 +57,7 @@ export function createSocket() {
   const sock = new WaClient(
     {
       store,
-      sessionId: config.sessionId,
+      sessionId: SESSION_ID,
       recoverFromClientTooOld: true,
       media: {
         processor: createMediaProcessor(),

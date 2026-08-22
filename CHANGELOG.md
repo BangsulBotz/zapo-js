@@ -1,5 +1,33 @@
 # Changelog
 
+## v1.2.0 - 2026-08-22
+
+Penyempurnaan sistem settings dinamis, penambahan fitur manajemen prefix tanpa restart, dan penyelarasan plugin tools dengan pola base.
+
+### Ditambahkan
+
+- Manajemen prefix dinamis yang langsung berlaku tanpa restart dan otomatis tersimpan ke `settings.js`.
+- `plugins/owner/addprefix.js` untuk menambah prefix baru lengkap dengan validasi kosong, spasi, panjang maksimal, dan duplikat.
+- `plugins/owner/delprefix.js` untuk menghapus prefix lewat nama atau nomor urut, termasuk proteksi agar prefix terakhir tidak bisa dihapus.
+- `plugins/owner/listprefix.js` untuk menampilkan daftar prefix bernomor beserta status mode tanpa prefix.
+- Alias pendukung `tambahprefix`, `hapusprefix`, dan `daftarprefix`.
+- `plugins/tools/c2i.js` untuk mengubah reply teks atau document berisi code menjadi gambar bergaya carbon.
+- Mode `.c2i -ct` untuk mengirim hasil sebagai link preview thumbnail memakai `sock.uploadThumbnail()`.
+- Pengujian perilaku terisolasi untuk fungsi `updateSetting()`, plugin prefix, dan plugin c2i.
+
+### Diperbarui
+
+- `settings.js` diperbarui pada fungsi `updateSetting()`: perbaikan bug regex yang memotong value array sehingga berpotensi korup file, kini mengganti satu baris properti utuh dan serialisasi value menggunakan `JSON.stringify`.
+- `settings.js` mendapatkan pelindung tambahan: menolak value bertipe object, menolak key yang tidak ada atau nested, serta commit RAM dan file dilakukan bersamaan setelah validasi lolos.
+- Komentar inline pada `settings.js` dipindah ke atas barisnya agar selamat dari proses tulis ulang file.
+- `sessionId` dan `logLevel` dihapus dari `settings.js` karena bukan bagian konfigurasi pengguna.
+- `src/createSocket.js` kini memakai konstanta lokal `SESSION_ID = 'default'` dan import config yang tidak terpakai dihapus.
+
+### Catatan Rilis
+
+- Fokus rilis adalah keamanan data settings saat diedit runtime, fleksibilitas prefix untuk pengguna akhir, dan konsistensi gaya code antar plugin.
+- Session, database lokal, credential, dan konfigurasi pribadi tetap harus disimpan secara lokal.
+
 ## v1.1.0 - 2026-08-22
 
 Pembaruan besar untuk menyegarkan base bot, menambah beberapa fitur publik, dan merapikan cara kerja plugin supaya lebih efisien serta mudah dirawat.
