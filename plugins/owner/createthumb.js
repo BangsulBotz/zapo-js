@@ -58,6 +58,6 @@ export default {
         inviteLinkGroupTypeV2: 0,
         ...meta
       }
-    }, { quote: m })
+    })
   }
 }
