@@ -1,18 +1,10 @@
 // plugins/owner/run.js
 
-import { createRequire } from 'module'
-import { fileURLToPath } from 'url'
-import { dirname } from 'path'
-import { buildEvalContext } from '../../handler.js'
-import { transformImports, createFakeConsole, formatEvalResult, formatEvalError, executeAsyncCode } from '../../lib/utils.js'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-const require = createRequire(import.meta.url)
+import { runUserCode } from '../../handler.js'
 
 const LOOKS_LIKE_TEXT = /^(text\/|application\/(javascript|json|x-javascript|typescript))/i
 
-async function getCodeFromQuoted(m, sock) {
+async function getCodeFromQuoted(m) {
   const q = m.quoted
   if (!q) return { error: 'Reply pesan atau file yang mau di-run dulu ya kak.' }
 
@@ -24,7 +16,7 @@ async function getCodeFromQuoted(m, sock) {
 
     let bytes
     try {
-      bytes = await sock.message.downloadBytes(q.full)
+      bytes = await q.download()
     } catch (err) {
       return { error: `Gagal download document: ${err?.message || err}` }
     }
@@ -54,31 +46,11 @@ export default {
   onlyOwner: true,
 
   async execute(m, { sock }) {
-    const { code: rawCode, error } = await getCodeFromQuoted(m, sock)
+    const { code, error } = await getCodeFromQuoted(m)
     if (error) return m.reply(`❌ ${error}`)
+    if (!code.trim()) return m.reply('❌ Code kosong.')
+    if (!sock?.message) return m.reply('❌ sock.message belum siap. Coba lagi sebentar.')
 
-    const code = rawCode.trim()
-    if (!code) return m.reply('❌ Code kosong.')
-
-    const { consoleOutput, fakeConsole } = createFakeConsole()
-
-    try {
-      const ctx = {
-        ...buildEvalContext(m, sock),
-        console: fakeConsole,
-        require,
-        __dirname,
-        __filename
-      }
-
-      const transformed = transformImports(code)
-      let evaled = await executeAsyncCode(transformed, ctx)
-      if (evaled instanceof Promise) evaled = await evaled
-
-      const output = formatEvalResult(evaled, consoleOutput)
-      return m.reply('```' + output + '```')
-    } catch (err) {
-      return m.reply(`Error:\n\`\`\`js\n${formatEvalError(err)}\n\`\`\``)
-    }
+    return m.reply(await runUserCode(code, m, sock))
   }
 }
