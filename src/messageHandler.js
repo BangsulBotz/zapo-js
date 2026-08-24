@@ -19,6 +19,7 @@ import { config } from '../settings.js'
 import { saveRawMessage } from '../db/rawMessage.js'
 import { saveOrUpdateContact } from '../db/contacts.js'
 import { isLocked } from '../lib/lockState.js'
+import { isTrustedFeature } from '../db/trustedFeatures.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PLUGINS_DIR = path.join(__dirname, '..', 'plugins')
@@ -67,21 +68,29 @@ function serializeOutgoing(sendEvent, sock) {
 }
 
 async function processCommand(m, sock) {
-  if (config.self && !m.isOwner) return
   if (!m.command) return
 
   const plugin = global.plugins?.get(m.command)
   if (!plugin) return
 
+  const trusted = m.isGroup && (isTrustedFeature(m.chat, plugin.command) || isTrustedFeature(m.sender, plugin.command))
+
+  if (config.self && !m.isOwner && !trusted) return
   if (isLocked() && plugin.command !== 'lock') return
 
-  const isOwnerOnly = plugin.ownerOnly || plugin.onlyOwner
   const isGroupOnly = plugin.groupOnly || plugin.onlyGroup
-  const isPrivateOnly = plugin.privateOnly || plugin.onlyPrivate
-
-  if (isOwnerOnly && !m.isOwner) return m.reply(config.pesan.ownerOnly)
   if (isGroupOnly && !m.isGroup) return m.reply(config.pesan.groupOnly)
-  if (isPrivateOnly && m.isGroup) return m.reply(config.pesan.privateOnly)
+
+  if (!m.isOwner && !trusted) {
+    const isOwnerOnly = plugin.ownerOnly || plugin.onlyOwner
+    const isPrivateOnly = plugin.privateOnly || plugin.onlyPrivate
+    const isAdminOnly = plugin.adminOnly || plugin.onlyAdmin
+
+    if (isOwnerOnly && !m.isOwner) return m.reply(config.pesan.ownerOnly)
+    if (isPrivateOnly && m.isGroup) return m.reply(config.pesan.privateOnly)
+    if (isAdminOnly && !m.isGroup) return m.reply(config.pesan.groupOnly)
+    if (isAdminOnly && !m.isAdmin) return m.reply(config.pesan.adminOnly)
+  }
 
   const args = extractArgs(m)
   m.args = args
@@ -94,18 +103,19 @@ async function processCommand(m, sock) {
 
   let typingInterval = null
 
-  try {
-    if (plugin.typing) {
-      await sock.presence.sendChatstate(m.chat, { state: 'composing' }).catch(() => { })
-      typingInterval = setInterval(() => {
-        sock.presence.sendChatstate(m.chat, { state: 'composing' }).catch(() => { })
-      }, TYPING_REFRESH)
-    }
+  if (plugin.typing) {
+    await sock.presence.sendChatstate(m.chat, { state: 'composing' }).catch(() => { })
+    typingInterval = setInterval(() => {
+      sock.presence.sendChatstate(m.chat, { state: 'composing' }).catch(() => { })
+    }, TYPING_REFRESH)
+  }
 
+  try {
     await plugin.execute(m, context)
   } finally {
     if (typingInterval) {
       clearInterval(typingInterval)
+      typingInterval = null
       await sock.presence.sendChatstate(m.chat, { state: 'paused' }).catch(() => { })
     }
   }
@@ -126,10 +136,18 @@ export async function messageHandler(sock) {
     const { lidJid, pnJid } = extractIdentityPair(event.key)
     const contactResult = saveOrUpdateContact({ lidJid, pnJid, pushName: event.pushName })
 
-    logPesanMasuk(m, contactResult)
-    saveRawMessage(m)
+    if (m.isNewsletter) {
+      logPesanMasuk(m, contactResult)
+      saveRawMessage(m)
+      return
+    }
 
-    processCommand(m, sock).catch((err) => sendErrorToOwner(sock, err, m, m.command))
+    processCommand(m, sock)
+      .catch((err) => sendErrorToOwner(sock, err, m, m.command))
+      .finally(() => {
+        logPesanMasuk(m, contactResult)
+        saveRawMessage(m)
+      })
   })
 
   sock.on('message_send', (sendEvent) => {
