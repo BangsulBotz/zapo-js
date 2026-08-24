@@ -3,7 +3,7 @@
 import chalk from 'chalk'
 import util from 'util'
 import { createRequire } from 'module'
-import { isLidJid, getContentType, parsePhoneJid } from 'zapo-js'
+import { isLidJid, getContentType } from 'zapo-js'
 import { config } from './settings.js'
 import { getContactByJid } from './db/contacts.js'
 import { getDeviceIdByMsgId, getRawMessageById } from './db/rawMessage.js'
@@ -342,7 +342,8 @@ export function serializeMessage(event, sock) {
     }
 
     const mentionSource = typeof payload === 'string' ? payload : ''
-    const autoMentions = [...mentionSource.matchAll(/@(\d{5,16})/g)].map((match) => parsePhoneJid(match[1]))
+    const hasMentionText = /@\d+/.test(mentionSource)
+    const autoMentions = hasMentionText && m?.sender ? [m.sender] : []
     const mentions = options.mentions ? [...options.mentions, ...autoMentions] : autoMentions
 
     return sock.message.send(targetJid, payload, {
