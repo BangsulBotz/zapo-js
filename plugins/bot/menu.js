@@ -1,42 +1,12 @@
 // menu.js
-import { createRequire } from 'module'
+import zapoPkg from 'zapo-js/package.json' with { type: 'json' }
 import { config } from '../../settings.js'
 
-const require = createRequire(import.meta.url)
-const sharp = require('sharp')
-const zapoVersion = require('zapo-js/package.json').version
+const zapoVersion = zapoPkg.version
 
+const MENU_URL = 'https://github.com/bangsulbotz/zapo-js'
 const BOT_CREATED_AT = new Date('2026-08-20T00:00:00')
-const FALLBACK_PP = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
 const BULAN_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
-
-async function getThumbnailBase64(sock, m) {
-    let imageUrl
-
-    try {
-        imageUrl = (await sock.profile.getProfilePicture(m.sender, 'image')).url
-    } catch {
-        imageUrl = null
-    }
-
-    if (!imageUrl) imageUrl = FALLBACK_PP
-
-    const response = await fetch(imageUrl)
-    const arrayBuffer = await response.arrayBuffer()
-    const imageBuffer = Buffer.from(arrayBuffer)
-    const thumbnailBuffer = await sharp(imageBuffer)
-        .resize(100, 100, {
-            fit: 'cover',
-            position: 'centre'
-        })
-        .jpeg({
-            quality: 50,
-            progressive: true
-        })
-        .toBuffer()
-
-    return thumbnailBuffer.toString('base64')
-}
 
 function getRuntime() {
     if (typeof Bun !== 'undefined') return `Bun v${Bun.version}`
@@ -224,24 +194,16 @@ export default {
             body = buildCategoryMenuText(groups, matchedKey, usedPrefix)
         }
         const hasil = header + '\n\n' + body
-        const thumbnailBase64 = await getThumbnailBase64(sock, m)
-        await m.reply({
-            extendedTextMessage: {
-                endCardTiles: [],
-                text: `https://github.com/bangsulbotz/zapo
-${hasil}`,
-                matchedText: "https://github.com/bangsulbotz/zapo",
-                description: buildDescription(),
-                title: m.pushName,
-                previewType: 7,
-                contextInfo: {
-                    mentionedJid: [m.sender],
-                    groupMentions: [],
-                    statusAttributions: []
-                },
-                jpegThumbnail: thumbnailBase64,
-                inviteLinkGroupTypeV2: 0
-            }
+
+        return sock.sendThumbnail(m.chat, {
+            url: MENU_URL,
+            title: m.pushName,
+            body: buildDescription(),
+            text: hasil,
+            thumbnail: 'random',
+            favicon: 'random',
+            quote: m,
+            mentions: [m.sender]
         })
     }
 }
