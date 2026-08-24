@@ -195,15 +195,19 @@ export default {
         }
         const hasil = header + '\n\n' + body
 
-        return sock.sendThumbnail(m.chat, {
-            url: MENU_URL,
-            title: m.pushName,
-            body: buildDescription(),
-            text: hasil,
-            thumbnail: 'random',
-            favicon: 'random',
-            quote: m,
-            mentions: [m.sender]
-        })
+        try {
+            return await sock.sendThumbnail(m.chat, {
+                url: MENU_URL,
+                title: m.pushName,
+                body: buildDescription(),
+                text: hasil,
+                thumbnail: 'random',
+                favicon: 'random',
+                quote: m,
+                mentions: [m.sender]
+            })
+        } catch {
+            return m.reply(hasil)
+        }
     }
 }

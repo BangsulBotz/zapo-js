@@ -48,14 +48,18 @@ export default {
       `*Deskripsi:*\n${description}\n` +
       `*Directory:* \`${source}\``
 
-    return sock.sendThumbnail(m.chat, {
-      url: HELP_URL,
-      title: `Fitur ${m.prefix}${plugin.command}`,
-      body: 'Detail informasi command & alias',
-      text: info,
-      thumbnail: 'random',
-      favicon: 'random',
-      quote: m
-    })
+    try {
+      return await sock.sendThumbnail(m.chat, {
+        url: HELP_URL,
+        title: `Fitur ${m.prefix}${plugin.command}`,
+        body: 'Detail informasi command & alias',
+        text: info,
+        thumbnail: 'random',
+        favicon: 'random',
+        quote: m
+      })
+    } catch {
+      return m.reply(info)
+    }
   }
 }
