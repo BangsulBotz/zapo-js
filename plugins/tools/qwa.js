@@ -3,6 +3,7 @@
 import { getRawMessageById } from '../../db/rawMessage.js'
 import { getContactByJid } from '../../db/contacts.js'
 import { normalizeJid } from '../../handler.js'
+import { reviveBase64Fields } from '../../lib/utils.js'
 
 const API_URL = 'https://qwa.eeq.my.id/api/generate'
 
@@ -92,6 +93,18 @@ function getDisplayText(message, includePreviewMetadata = false) {
   if (!includePreviewMetadata || (!title && !description)) {
     if (text) return text
     if (content.type === 'imageMessage' || content.content?.jpegThumbnail) return '[Foto]'
+    if (content.type.endsWith('Message')) {
+      const typeLabels = {
+        videoMessage: 'Video',
+        audioMessage: 'audio',
+        documentMessage: 'Dokumen',
+        stickerMessage: 'Stiker',
+        locationMessage: 'Lokasi',
+        contactMessage: 'Kontak'
+      }
+      const label = typeLabels[content.type] || content.type.replace(/Message$/, '')
+      return `[${label}]`
+    }
     return ''
   }
 
@@ -119,6 +132,10 @@ async function getImageData(message, download, sock) {
   const parsed = getMessageContent(message)
   const content = parsed?.content
   if (!content) return ''
+
+  const isImage = parsed.type === 'imageMessage'
+  const isLinkPreview = parsed.type === 'extendedTextMessage' && content.jpegThumbnail
+  if (!isImage && !isLinkPreview) return ''
 
   const hasThumbnailMetadata = Boolean(content.thumbnailDirectPath && content.mediaKey)
   const hasMediaMetadata = Boolean(
@@ -229,13 +246,13 @@ export default {
     const senderAvatar = await getProfileUrl(sock, mainProfileJid)
     const senderImage = await getImageData(
       m.quoted.full,
-      (source) => sock.message.downloadBytes(source),
+      (source) => sock.message.downloadBytes(reviveBase64Fields(source)),
       sock
     )
     const quotedImage = nested
       ? await getImageData(
           nested.message,
-          (source) => sock.message.downloadBytes(source),
+          (source) => sock.message.downloadBytes(reviveBase64Fields(source)),
           sock
         )
       : ''
