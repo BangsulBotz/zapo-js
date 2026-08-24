@@ -4,6 +4,7 @@ import { config } from '../../settings.js'
 
 const RAY_API = 'https://ray.tinte.dev/api/v1/screenshot'
 const DEFAULT_TITLE = 'code.js'
+const TIMEOUT_MS = 60000
 
 const EXT_LANG = {
   js: 'javascript', mjs: 'javascript', cjs: 'javascript',
@@ -50,20 +51,35 @@ async function resolveInput(m) {
 }
 
 async function generateImage(code, title, language) {
-  const res = await fetch(RAY_API, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      code,
-      language,
-      theme: 'crafter-station',
-      padding: 8,
-      fontSize: 18,
-      lineNumbers: true,
-      title,
-      background: 'ocean'
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+
+  let res
+
+  try {
+    res = await fetch(RAY_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code,
+        language,
+        theme: 'crafter-station',
+        padding: 8,
+        fontSize: 18,
+        lineNumbers: true,
+        title,
+        background: 'ocean'
+      }),
+      signal: controller.signal
     })
-  })
+  } catch (err) {
+    if (err?.name === 'AbortError') {
+      throw new Error('Request timeout setelah 1 menit.')
+    }
+    throw err
+  } finally {
+    clearTimeout(timer)
+  }
 
   if (!/^image\//.test(res.headers.get('content-type') || '')) {
     const detail = await res.text().catch(() => '')
