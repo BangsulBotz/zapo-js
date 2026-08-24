@@ -46,7 +46,8 @@ export default {
       })
     }
 
-    const jpegThumbnail = adReply?.jpegThumbnail || content.jpegThumbnail
+    let jpegThumbnail = adReply?.jpegThumbnail || content.jpegThumbnail
+    if (typeof jpegThumbnail === 'string') jpegThumbnail = Buffer.from(jpegThumbnail, 'base64')
     if (jpegThumbnail) {
       return m.reply({
         type: 'image',
