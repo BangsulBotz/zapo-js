@@ -4,6 +4,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { downloadMediaMessage } from 'zapo-js'
+import { reviveBase64Fields } from '../../lib/utils.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -69,7 +70,8 @@ export default {
       || rawMsg?.[m.type]?.contextInfo
 
     const rawQuotedMsg = contextInfo?.quotedMessage
-    const mediaObj = extractMediaMessage(rawQuotedMsg) || extractMediaMessage(q.full)
+    const mediaObj = extractMediaMessage(rawQuotedMsg)
+      || extractMediaMessage(reviveBase64Fields(q.full))
 
     if (!mediaObj) {
       return m.reply('Media tidak dikenal atau tidak didukung.')
