@@ -30,6 +30,8 @@ Rilis kumulatif vs repository GitHub (github.com/BangsulBotz/zapo-js): sistem tr
     - Log per-save dihapus (konsol ±16rb baris/hari lebih tenang); `optimizeDatabase()` kini menjalankan `VACUUM`.
 - `plugins/bot/owner.js` - kirim kontak owner (vcard).
 - `plugins/grup/swgc.js` - kirim ulang pesan yang di-reply sebagai status grup; input `nama|emoji` meng-inject `statusAudienceMetadata` ke contextInfo otomatis.
+- `plugins/search/pinterest.js` - cari gambar Pinterest (`.pin`/`.pint`/`.pinterest <query>`), 5 hasil dikirim sebagai album via `sock.sendAlbum`.
+- `lib/wrapper.js` - wrapper baru `sock.sendAlbum(jid, [{image|video}, ...], {quoted, caption})`: upload tiap media -> kirim container `albumMessage` -> kirim anak-anaknya terhubung via `messageAssociation`.
 
 ### Diperbarui
 
