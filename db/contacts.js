@@ -17,7 +17,10 @@ const db = new Database(dbPath)
 db.pragma('journal_mode = WAL')
 db.pragma('synchronous = NORMAL')
 db.pragma('wal_autocheckpoint = 1000')
+db.pragma('journal_size_limit = 67108864')
+db.pragma('cache_size = -8000')
 db.pragma('temp_store = MEMORY')
+db.pragma('mmap_size = 268435456')
 
 db.exec(`
     CREATE TABLE IF NOT EXISTS contacts (
