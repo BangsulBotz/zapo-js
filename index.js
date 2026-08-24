@@ -5,6 +5,7 @@ import { createSocket } from './src/createSocket.js'
 import { connectionHandler } from './src/connectionHandler.js'
 import { messageHandler } from './src/messageHandler.js'
 import { groupEventHandler } from './src/groupEventHandler.js'
+import { startThumbAutoRefresh } from './lib/thumbAutoRefresh.js'
 
 let sock
 
@@ -14,18 +15,16 @@ try {
   connectionHandler(sock)
   groupEventHandler(sock)
 
-  const messageHandlerResult = messageHandler(sock)
-
-  if (messageHandlerResult instanceof Promise) {
-    messageHandlerResult.catch(err => {
-      console.error(
-        chalk.red('[MESSAGE] Handler error:'),
-        err?.stack || err?.message || err
-      )
-    })
-  }
+  messageHandler(sock).catch(err => {
+    console.error(
+      chalk.red('[MESSAGE] Handler error:'),
+      err?.stack || err?.message || err
+    )
+  })
 
   await sock.connect()
+
+  startThumbAutoRefresh(sock)
 
 } catch (err) {
   console.error(
