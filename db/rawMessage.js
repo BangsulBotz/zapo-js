@@ -55,7 +55,17 @@ db.exec(`
     )
 `)
 
-if (!db.prepare(`PRAGMA table_info(raw_messages_blob)`).all().some(c => c.name === 'raw_bin')) {
+const blobTableExists = !!db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='raw_messages_blob'`).get()
+
+if (!blobTableExists) {
+    db.exec(`
+        CREATE TABLE IF NOT EXISTS raw_messages_blob (
+            msg_id TEXT PRIMARY KEY,
+            raw_json TEXT DEFAULT NULL,
+            raw_bin BLOB DEFAULT NULL
+        )
+    `)
+} else if (!db.prepare(`PRAGMA table_info(raw_messages_blob)`).all().some(c => c.name === 'raw_bin')) {
     db.transaction(() => {
         db.exec(`
             CREATE TABLE raw_messages_blob_new (
