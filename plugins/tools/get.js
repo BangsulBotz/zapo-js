@@ -2,6 +2,7 @@
 
 import axios from 'axios'
 import { performance } from 'perf_hooks'
+import { fileTypeFromBuffer } from 'file-type'
 
 const USER_AGENTS = [
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
@@ -44,30 +45,7 @@ function buildHeaders(url) {
   }
 }
 
-function detectFromMagicBytes(buf) {
-  const h = buf.slice(0, 12)
-  if (h[0] === 0xFF && h[1] === 0xD8 && h[2] === 0xFF) return { ext: 'jpg', mime: 'image/jpeg' }
-  if (h[0] === 0x89 && h[1] === 0x50 && h[2] === 0x4E && h[3] === 0x47) return { ext: 'png', mime: 'image/png' }
-  if (h[0] === 0x47 && h[1] === 0x49 && h[2] === 0x46) return { ext: 'gif', mime: 'image/gif' }
-  if (h[0] === 0x52 && h[1] === 0x49 && h[2] === 0x46 && h[3] === 0x46 && h[8] === 0x57 && h[9] === 0x45 && h[10] === 0x42 && h[11] === 0x50) return { ext: 'webp', mime: 'image/webp' }
-  if (h[0] === 0x25 && h[1] === 0x50 && h[2] === 0x44 && h[3] === 0x46) return { ext: 'pdf', mime: 'application/pdf' }
-  if (h[0] === 0x49 && h[1] === 0x44 && h[2] === 0x33) return { ext: 'mp3', mime: 'audio/mpeg' }
-  if (h[0] === 0xFF && (h[1] & 0xE0) === 0xE0) return { ext: 'mp3', mime: 'audio/mpeg' }
-  if (h[4] === 0x66 && h[5] === 0x74 && h[6] === 0x79 && h[7] === 0x70) {
-    const brand = buf.slice(8, 12).toString('ascii')
-    if (['M4A ', 'M4B ', 'M4P '].includes(brand)) return { ext: 'm4a', mime: 'audio/mp4' }
-    return { ext: 'mp4', mime: 'video/mp4' }
-  }
-  if (h[0] === 0x1A && h[1] === 0x45 && h[2] === 0xDF && h[3] === 0xA3) return { ext: 'webm', mime: 'video/webm' }
-  if (h[0] === 0x4F && h[1] === 0x67 && h[2] === 0x67 && h[3] === 0x53) return { ext: 'ogg', mime: 'audio/ogg' }
-  if (h[0] === 0x66 && h[1] === 0x4C && h[2] === 0x61 && h[3] === 0x43) return { ext: 'flac', mime: 'audio/flac' }
-  if (h[0] === 0x52 && h[1] === 0x49 && h[2] === 0x46 && h[3] === 0x46 && h[8] === 0x57 && h[9] === 0x41 && h[10] === 0x56 && h[11] === 0x45) return { ext: 'wav', mime: 'audio/wav' }
-  if (h[0] === 0x50 && h[1] === 0x4B && h[2] === 0x03 && h[3] === 0x04) return { ext: 'zip', mime: 'application/zip' }
-  if (h[0] === 0xD0 && h[1] === 0xCF && h[2] === 0x11 && h[3] === 0xE0) return { ext: 'xls', mime: 'application/vnd.ms-excel' }
-  if (h[0] === 0x1F && h[1] === 0x8B) return { ext: 'gz', mime: 'application/gzip' }
-  if (buf.slice(0, 7).toString() === '<!DOCTY' || buf.slice(0, 5).toString().toLowerCase() === '<html') return { ext: 'html', mime: 'text/html' }
-  return null
-}
+
 
 const EXT_MAP = {
   jpg: { mime: 'image/jpeg' }, jpeg: { mime: 'image/jpeg' },
@@ -141,8 +119,8 @@ function detectFromUrl(url) {
   return null
 }
 
-function resolveFileInfo(buffer, url, contentType) {
-  const magic = detectFromMagicBytes(buffer)
+async function resolveFileInfo(buffer, url, contentType) {
+  const magic = await fileTypeFromBuffer(buffer)
   if (magic) {
     if (magic.ext === 'zip') return detectFromZipContent(buffer)
     return magic
@@ -218,7 +196,7 @@ export default {
       const contentType = response.headers['content-type'] || ''
       const buffer = Buffer.from(response.data)
       const duration = ((performance.now() - startTime) / 1000).toFixed(2)
-      const { ext, mime } = resolveFileInfo(buffer, url, contentType)
+      const { ext, mime } = await resolveFileInfo(buffer, url, contentType)
       const tryLabel = attempt > 1 ? ` _(percobaan ke-${attempt})_` : ''
       const sizeKB = (buffer.length / 1024).toFixed(1)
       const sizeMB = (buffer.length / 1024 / 1024).toFixed(2)
@@ -250,8 +228,9 @@ export default {
 
       if (/^text|json|javascript|xml/.test(mime)) {
         const text = buffer.toString('utf-8')
-        if (text.length > 4000) return sendAsFile(sock, m, buffer, `result.${ext}`, mime, caption)
-        return m.reply(text.slice(0, 4000))
+        const header = `${caption}\n\n`
+        if ((header + text).length > 4000) return sendAsFile(sock, m, buffer, `result.${ext}`, mime, caption)
+        return m.reply(header + text)
       }
 
       return sendAsFile(sock, m, buffer, `file_${Date.now()}.${ext}`, mime, caption)
