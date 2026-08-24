@@ -1,5 +1,5 @@
 // plugins/chanel/followch.js
-import { buildQuoteContext, parseChannelTarget } from '../../lib/utils.js'
+import { parseChannelTarget } from '../../lib/utils.js'
 
 export default {
   command: 'followch',
@@ -37,10 +37,6 @@ export default {
       return m.reply('Gagal follow channel, link/JID tidak valid atau channel tidak ditemukan.')
     }
 
-    await m.reply(m.chat, {
-      extendedTextMessage: {
-        text: `✅ Berhasil follow channel${name ? `:\n*${name}*` : ''}\n\`\`\`${jid}\`\`\``
-      }
-    }, { contextInfo: buildQuoteContext(m) })
+    await m.reply(`✅ Berhasil follow channel${name ? `:\n*${name}*` : ''}\n\`\`\`${jid}\`\`\``)
   }
 }
