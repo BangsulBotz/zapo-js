@@ -17,13 +17,34 @@ import {
   lazy,
   trimRawReplacer,
   cloneStripQuoted,
-  detectMediaType
+  reviveBase64Fields,
+  detectMediaType,
+  transformImports,
+  createFakeConsole,
+  formatEvalResult,
+  formatEvalError,
+  executeAsyncCode
 } from './lib/utils.js'
 
 const require = createRequire(import.meta.url)
 
 const IGNORED_NODE_TAGS = ['enc', 'reporting', 'verified_name']
 const OWNER_NUMBER = config.owner.replace(/[^0-9]/g, '')
+const INSPECT_CUSTOM = Symbol.for('nodejs.util.inspect.custom')
+
+function attachInspectSummary(target) {
+  Object.defineProperty(target, INSPECT_CUSTOM, {
+    value() {
+      const result = {}
+      for (const key of Object.keys(target)) {
+        const desc = Object.getOwnPropertyDescriptor(target, key)
+        result[key] = desc?.get ? '[lazy]' : target[key]
+      }
+      return result
+    },
+    configurable: true
+  })
+}
 
 const SPECIAL_TEXT_EXTRACTORS = {
   interactiveResponseMessage(msgContent, fallback) {
@@ -190,8 +211,9 @@ function serializeQuoted(context, chatJid, isGroup, sock) {
     })
   }
 
-  quoted.download = async () => sock.message.downloadBytes(quoted.full)
-  quoted.toJSON = function () { return JSON.parse(JSON.stringify(this.full, trimRawReplacer)) }
+  quoted.download = async () => sock.message.downloadBytes(reviveBase64Fields(quoted.full))
+
+  attachInspectSummary(quoted)
 
   return quoted
 }
@@ -222,6 +244,7 @@ export function serializeMessage(event, sock) {
 
   const m = {
     raw: event,
+    key: event.key,
     id: event.key?.id ?? null,
     chat: event.key?.remoteJid ?? null,
     sender,
@@ -329,6 +352,8 @@ export function serializeMessage(event, sock) {
     })
   }
 
+  attachInspectSummary(m)
+
   return m
 }
 
@@ -413,5 +438,21 @@ export function buildEvalContext(m, sock) {
     importModule: (spec) => import(spec),
     util,
     config
+  }
+}
+
+export async function runUserCode(code, m, sock) {
+  const { consoleOutput, fakeConsole } = createFakeConsole()
+
+  try {
+    const result = await executeAsyncCode(transformImports(code), {
+      ...buildEvalContext(m, sock),
+      console: fakeConsole,
+      __dirname: process.cwd(),
+      __filename: '[eval]'
+    })
+    return '```' + formatEvalResult(result, consoleOutput) + '```'
+  } catch (err) {
+    return `Error:\n\`\`\`js\n${formatEvalError(err)}\n\`\`\``
   }
 }
