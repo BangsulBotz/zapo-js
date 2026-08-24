@@ -31,6 +31,7 @@ Rilis kumulatif vs repository GitHub (github.com/BangsulBotz/zapo-js): sistem tr
 - `plugins/bot/owner.js` - kirim kontak owner (vcard).
 - `plugins/grup/swgc.js` - kirim ulang pesan yang di-reply sebagai status grup; input `nama|emoji` meng-inject `statusAudienceMetadata` ke contextInfo otomatis.
 - `plugins/search/pinterest.js` - cari gambar Pinterest (`.pin`/`.pint`/`.pinterest <query>`), 5 hasil dikirim sebagai album via `sock.sendAlbum`.
+- `plugins/owner/delthumb.js` & `delfavicon.js` - hapus entri thumbnail/favicon dari koleksi via nama, dukung multi-nama.
 - `lib/wrapper.js` - wrapper baru `sock.sendAlbum(jid, [{image|video}, ...], {quoted, caption})`: upload tiap media -> kirim container `albumMessage` -> kirim anak-anaknya terhubung via `messageAssociation`.
 
 ### Diperbarui
@@ -74,6 +75,7 @@ Rilis kumulatif vs repository GitHub (github.com/BangsulBotz/zapo-js): sistem tr
 
 ### Diperbaiki
 
+- Menu/help gagal saat pool thumbnail kosong - kini fallback ke teks biasa tanpa thumbnail.
 - Flag `onlyAdmin` tidak ditegakkan - plugin bisa dipakai semua anggota; kini dicek di `processCommand`.
 - `reviveBase64Fields` tidak diimport di `addfile.js` - fallback path crash ReferenceError.
 - `fileTypeFromBuffer()` tanpa await di `get.js` - deteksi mimetype selalu gagal; semua hasil fetch terkirim document generik.
