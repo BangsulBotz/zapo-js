@@ -9,6 +9,12 @@ import {
 } from '../db/groupCache.js'
 
 const PARTICIPANT_ACTIONS = new Set(['add', 'remove', 'promote', 'demote'])
+const GROUP_METADATA_EVENTS_NEEDING_REFRESH = new Set([
+  'subject',
+  'photo',
+  'group_code',
+  'group_description'
+])
 
 function patchParticipants(jid, action, participants) {
   return patchGroupMetadata(jid, (metadata) => {
@@ -85,8 +91,9 @@ export function groupEventHandler(sock) {
       }
     }
 
+    const needsFullRefresh = GROUP_METADATA_EVENTS_NEEDING_REFRESH.has(action)
     invalidateGroupMetadata(jid)
-    await getGroupMetadata(jid, sock, { force: true })
-    console.log(chalk.blue(`[GROUP CACHE] Refetch metadata (action: ${action || 'unknown'}) di ${jid}`))
+    await getGroupMetadata(jid, sock, { force: needsFullRefresh })
+    console.log(chalk.blue(`[GROUP CACHE] ${needsFullRefresh ? 'Refetch' : 'Update'} metadata (action: ${action || 'unknown'}) di ${jid}`))
   })
 }
