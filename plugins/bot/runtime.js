@@ -10,7 +10,7 @@ export default {
   typing: true,
 
   async execute(m) {
-    const uptimeStr = formatDuration(Math.floor(process.uptime()))
+    const uptimeStr = formatDuration(process.uptime() * 1000)
     const mem = process.memoryUsage()
 
     const totalMem = os.totalmem()
