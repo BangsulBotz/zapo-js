@@ -1,5 +1,7 @@
 // plugins/bot/help.js
 
+const HELP_URL = 'https://github.com/bangsulbotz/zapo-js'
+
 function formatAliases(plugin) {
   const rawAliases = plugin.alias ?? plugin.aliases
   const aliases = Array.isArray(rawAliases)
@@ -23,7 +25,7 @@ export default {
 > .help <command/alias>`,
   help: '`<command/alias>`',
 
-  async execute(m, { plugins }) {
+  async execute(m, { plugins, sock }) {
     const requested = m.args?.[0]?.toLowerCase()
 
     if (!requested) {
@@ -39,12 +41,21 @@ export default {
     const source = plugin.source || 'Tidak diketahui'
     const description = plugin.description || 'Tidak ada deskripsi.'
 
-    return m.reply(
+    const info =
       `*Informasi Fitur*\n\n` +
       `*Command:* \`${m.prefix}${plugin.command}\`\n` +
       `*Alias:* ${aliases}\n` +
       `*Deskripsi:*\n${description}\n` +
       `*Directory:* \`${source}\``
-    )
+
+    return sock.sendThumbnail(m.chat, {
+      url: HELP_URL,
+      title: `Fitur ${m.prefix}${plugin.command}`,
+      body: 'Detail informasi command & alias',
+      text: info,
+      thumbnail: 'random',
+      favicon: 'random',
+      quote: m
+    })
   }
 }
