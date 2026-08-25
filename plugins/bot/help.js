@@ -1,5 +1,7 @@
 // plugins/bot/help.js
 
+import { getRandomThumb } from '../../db/thumbnails.js'
+
 const HELP_URL = 'https://github.com/bangsulbotz/zapo-js'
 
 function formatAliases(plugin) {
@@ -49,15 +51,18 @@ export default {
       `*Directory:* \`${source}\``
 
     try {
-      return await sock.sendThumbnail(m.chat, {
+      const opts = {
         url: HELP_URL,
         title: `Fitur ${m.prefix}${plugin.command}`,
         body: 'Detail informasi command & alias',
         text: info,
         thumbnail: 'random',
-        favicon: 'random',
         quote: m
-      })
+      }
+
+      if (getRandomThumb('favicon')) opts.favicon = 'random'
+
+      return await sock.sendThumbnail(m.chat, opts)
     } catch {
       return m.reply(info)
     }

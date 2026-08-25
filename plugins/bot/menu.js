@@ -1,6 +1,7 @@
 // menu.js
 import zapoPkg from 'zapo-js/package.json' with { type: 'json' }
 import { config } from '../../settings.js'
+import { getRandomThumb } from '../../db/thumbnails.js'
 
 const zapoVersion = zapoPkg.version
 
@@ -196,16 +197,19 @@ export default {
         const hasil = header + '\n\n' + body
 
         try {
-            return await sock.sendThumbnail(m.chat, {
+            const opts = {
                 url: MENU_URL,
                 title: m.pushName,
                 body: buildDescription(),
                 text: hasil,
                 thumbnail: 'random',
-                favicon: 'random',
                 quote: m,
                 mentions: [m.sender]
-            })
+            }
+
+            if (getRandomThumb('favicon')) opts.favicon = 'random'
+
+            return await sock.sendThumbnail(m.chat, opts)
         } catch {
             return m.reply(hasil)
         }
