@@ -18,19 +18,44 @@ import {
   trimRawReplacer,
   cloneStripQuoted,
   reviveBase64Fields,
-  detectMediaType,
+  detectMediaType
+} from './lib/utils.js'
+import {
   transformImports,
   createFakeConsole,
   formatEvalResult,
   formatEvalError,
   executeAsyncCode
-} from './lib/utils.js'
+} from './lib/function.js'
 
 const require = createRequire(import.meta.url)
 
 const IGNORED_NODE_TAGS = ['enc', 'reporting', 'verified_name']
 const OWNER_NUMBER = config.owner.replace(/[^0-9]/g, '')
 const INSPECT_CUSTOM = Symbol.for('nodejs.util.inspect.custom')
+
+const NOISY_MESSAGE_FIELDS = [
+  'messageContextInfo',
+  'deviceListMetadata',
+  'deviceListMetadataVersion',
+  'limitSharing',
+  'limitSharingV2',
+  'messageAddOnDurationInSecs',
+  'botMessageSecret',
+  'botMetadata',
+  'reportingTokenVersion',
+  'messageAddOnExpiryType',
+  'messageAssociation',
+  'capiCreatedGroup',
+  'supportPayload',
+  'weblinkRenderConfig',
+  'teeBotMetadata',
+  'accountEncryptionAttestation',
+  'associatedPrimaryIdentityKey',
+  'paddingBytes',
+  'messageSecret',
+  'senderKeyDistributionMessage'
+]
 
 function attachInspectSummary(target) {
   Object.defineProperty(target, INSPECT_CUSTOM, {
@@ -44,6 +69,22 @@ function attachInspectSummary(target) {
     },
     configurable: true
   })
+}
+
+function attachCompactJsonInspect(target) {
+  Object.defineProperty(target, INSPECT_CUSTOM, {
+    value(_depth, options) {
+      return util.inspect(Object.fromEntries(Object.entries(target)), {
+        ...options,
+        colors: false,
+        depth: 10,
+        compact: false,
+        getters: false
+      })
+    },
+    configurable: true
+  })
+  return target
 }
 
 const SPECIAL_TEXT_EXTRACTORS = {
@@ -83,6 +124,20 @@ function getRealSender(key) {
   return normalizeJid(key?.remoteJid)
 }
 
+function stripDeviceId(jid) {
+  return jid ? jid.replace(/:\d+@/, '@') : jid
+}
+
+function isJidFromBot(jid, sock) {
+  if (!jid) return false
+  const creds = sock.getCredentials?.()
+  const botPn = stripDeviceId(creds?.meJid)
+  const botLid = stripDeviceId(creds?.meLid)
+  if (!botPn && !botLid) return false
+  const normalized = normalizeJid(jid)
+  return normalized === botPn || normalized === botLid
+}
+
 export function extractIdentityPair(key) {
   const primary = normalizeJid(key?.participant ?? key?.remoteJid)
   const alt = normalizeJid(key?.participantAlt ?? key?.remoteJidAlt)
@@ -96,7 +151,7 @@ export function extractIdentityPair(key) {
   }
 }
 
-function buildContact(jid, fallbackPushName) {
+export function buildContact(jid, fallbackPushName) {
   const row = getContactByJid(jid)
 
   if (!row) {
@@ -153,17 +208,25 @@ function serializeQuoted(context, chatJid, isGroup, sock) {
   const qMsg = context.quotedMessage
   const qType = getContentType(qMsg)
   const rawContent = qMsg[qType]
+  const quotedSender = normalizeJid(context.participant)
 
   const quoted = {
     key: {
       id: context.stanzaId ?? null,
       remoteJid: context.remoteJid ?? null,
-      participant: normalizeJid(context.participant) ?? null,
-      fromMe: false
+      participant: quotedSender ?? null
     },
-    sender: normalizeJid(context.participant),
+    sender: quotedSender,
     type: qType
   }
+
+  lazy(quoted, 'fromMe', () => isJidFromBot(quoted.sender, sock))
+
+  Object.defineProperty(quoted.key, 'fromMe', {
+    get() { return quoted.fromMe },
+    enumerable: true,
+    configurable: true
+  })
 
   Object.defineProperties(quoted, {
     text: {
@@ -187,7 +250,9 @@ function serializeQuoted(context, chatJid, isGroup, sock) {
       enumerable: true, configurable: true
     },
     full: {
-      get() { return { [this.type]: cloneStripQuoted(rawContent) } },
+      get() {
+        return attachCompactJsonInspect({ [this.type]: cloneStripQuoted(rawContent) })
+      },
       enumerable: true, configurable: true
     },
     json: {
@@ -279,21 +344,13 @@ export function serializeMessage(event, sock) {
   m.groupMetadata = (jid = m.chat) => getGroupMetadata(jid, sock)
 
   if (m.isGroup) {
-    if (!getCachedGroupMetadata(m.chat)) {
-      getGroupMetadata(m.chat, sock).catch(() => { })
-    }
-
     Object.defineProperties(m, {
-      groupMetadataCached: {
-        get() { return getCachedGroupMetadata(this.chat) },
-        enumerable: true, configurable: true
-      },
       groupName: {
-        get() { return this.groupMetadataCached?.subject || 'Grup Tanpa Nama' },
+        get() { return getCachedGroupMetadata(this.chat)?.subject || 'Grup Tanpa Nama' },
         enumerable: true, configurable: true
       },
       participants: {
-        get() { return this.groupMetadataCached?.participants || [] },
+        get() { return getCachedGroupMetadata(this.chat)?.participants || [] },
         enumerable: true, configurable: true
       },
       isAdmin: {
@@ -301,7 +358,13 @@ export function serializeMessage(event, sock) {
         enumerable: true, configurable: true
       },
       isBotAdmin: {
-        get() { return isAdminInGroup(this.chat, normalizeJid(sock.user?.id)) },
+        get() {
+          if (isJidFromBot(this.sender, sock)) return true
+          const creds = sock.getCredentials?.()
+          const botPn = stripDeviceId(creds?.meJid)
+          const botLid = stripDeviceId(creds?.meLid)
+          return isAdminInGroup(this.chat, botPn) || isAdminInGroup(this.chat, botLid)
+        },
         enumerable: true, configurable: true
       },
       isOwnerGroup: {
@@ -324,27 +387,14 @@ export function serializeMessage(event, sock) {
       options = args[2] || {}
     }
 
-    let payload = content
-
-    if (typeof content === 'string') {
-      const trimmed = content.trim()
-      const looksLikeJson =
-        (trimmed.startsWith('{') && trimmed.endsWith('}')) ||
-        (trimmed.startsWith('[') && trimmed.endsWith(']'))
-
-      if (looksLikeJson) {
-        try {
-          const parsed = JSON.parse(trimmed)
-          if (parsed && typeof parsed === 'object') payload = parsed
-        } catch {
-        }
-      }
-    }
+    const payload = content
 
     const mentionSource = typeof payload === 'string' ? payload : ''
     const hasMentionText = /@\d+/.test(mentionSource)
     const autoMentions = hasMentionText && m?.sender ? [m.sender] : []
-    const mentions = options.mentions ? [...options.mentions, ...autoMentions] : autoMentions
+    const mentions = options.mentions?.length
+      ? [...new Set(options.mentions.filter(Boolean))]
+      : autoMentions
 
     return sock.message.send(targetJid, payload, {
       quote: m.raw,
@@ -419,11 +469,32 @@ export function logPesanMasuk(m, contactResult) {
   console.log(lines.join('\n'))
 }
 
+function cleanProtoMessage(msg) {
+  if (!msg || typeof msg !== 'object') return msg
+  const cleaned = { ...msg }
+
+  for (const field of NOISY_MESSAGE_FIELDS) delete cleaned[field]
+
+  for (const key of Object.keys(cleaned)) {
+    if (key.startsWith('_') && typeof cleaned[key] === 'object') delete cleaned[key]
+  }
+
+  return cleaned
+}
+
 export function logRawDebug(event) {
-  console.log('[RAW]', JSON.stringify(event, trimRawReplacer, 2))
+  const cleanEvent = { ...event }
+  if (cleanEvent.message) {
+    const msgType = Object.keys(cleanEvent.message).find(k => k.endsWith('Message'))
+    if (msgType) {
+      cleanEvent.message = { [msgType]: cleanProtoMessage(cleanEvent.message[msgType]) }
+    }
+  }
+  console.log('[RAW]', JSON.stringify(cleanEvent, trimRawReplacer, 2))
 }
 
 export function buildEvalContext(m, sock) {
+  const creds = sock.getCredentials?.()
   return {
     m,
     sock,
@@ -432,7 +503,7 @@ export function buildEvalContext(m, sock) {
     jid: m.chat,
     from: m.chat,
     sender: m.sender,
-    me: sock?.user?.id || sock?.user?.jid || null,
+    me: creds?.meJid || null,
     process,
     Buffer,
     require,
