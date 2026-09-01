@@ -6,10 +6,15 @@ export default {
   command: 'noprefix',
   alias: ['nopref'],
   category: 'owner',
-  description: 'Mengaktifkan atau menonaktifkan mode tanpa prefix.\n\n' +
-    '*Format Penggunaan:*\n' +
-    '> `Mengaktifkan mode tanpa prefix`\n> .noprefix on\n\n' +
-    '> `Menonaktifkan mode tanpa prefix`\n> .noprefix off',
+  description: `> Mengaktifkan atau menonaktifkan mode tanpa prefix.
+
+*Keterangan Format:*
+> \`on\` = aktifkan mode tanpa prefix.
+> \`off\` = nonaktifkan mode tanpa prefix.
+
+contoh penggunaan:
+> \`.noprefix on\`
+> \`.noprefix off\``,
   onlyOwner: true,
 
   async execute(m, { args }) {
