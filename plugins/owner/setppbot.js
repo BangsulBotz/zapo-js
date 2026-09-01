@@ -1,6 +1,36 @@
 // plugins/owner/setppbot.js
 
 import sharp from 'sharp'
+import dns from 'node:dns'
+import net from 'node:net'
+
+function isPrivateOrReservedIp(ip) {
+  if (net.isIP(ip) === 4) {
+    const [a, b] = ip.split('.').map(Number)
+    return a === 10 || a === 127 || a === 0 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 169 && b === 254)
+  }
+  if (net.isIP(ip) === 6) {
+    const lower = ip.toLowerCase()
+    return lower === '::1' || lower === '::' || lower.startsWith('fc') || lower.startsWith('fd') || lower.startsWith('fe80') || lower.startsWith('::ffff:127.') || lower.startsWith('::ffff:10.')
+  }
+  return true
+}
+
+async function isSafeImageUrl(url) {
+  let hostname
+  try {
+    hostname = new URL(url).hostname
+  } catch {
+    return false
+  }
+  if (/^localhost$/i.test(hostname)) return false
+  try {
+    const addresses = await dns.promises.lookup(hostname, { all: true })
+    return addresses.length > 0 && addresses.every(({ address }) => !isPrivateOrReservedIp(address))
+  } catch {
+    return false
+  }
+}
 
 export default {
   command: 'setppbot',
@@ -30,6 +60,9 @@ contoh penggunaan:
       const url = args[0]
       if (!url || !/^https?:\/\//i.test(url)) {
         return m.reply(`❌ Format salah.\n\n*Contoh:*\n> ${m.prefix}${m.command} (reply gambar)\n> ${m.prefix}${m.command} <url gambar>\n> kirim gambar dengan caption ${m.prefix}${m.command}`)
+      }
+      if (!(await isSafeImageUrl(url))) {
+        return m.reply(`❌ URL tidak diizinkan.`)
       }
       const res = await fetch(url)
       if (!res.ok) return m.reply(`❌ Gagal mengunduh gambar: ${res.status} ${res.statusText}`)
