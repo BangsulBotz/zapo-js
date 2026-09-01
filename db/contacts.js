@@ -5,6 +5,7 @@ import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
 import chalk from 'chalk'
+import { LRU } from '../lib/lru.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const STORE_DIR = path.join(__dirname, '..', 'store')
@@ -17,10 +18,10 @@ const db = new Database(dbPath)
 db.pragma('journal_mode = WAL')
 db.pragma('synchronous = NORMAL')
 db.pragma('wal_autocheckpoint = 1000')
-db.pragma('journal_size_limit = 67108864')
-db.pragma('cache_size = -8000')
+db.pragma('journal_size_limit = 8388608')
+db.pragma('cache_size = -2000')
 db.pragma('temp_store = MEMORY')
-db.pragma('mmap_size = 268435456')
+db.pragma('mmap_size = 8388608')
 
 db.exec(`
     CREATE TABLE IF NOT EXISTS contacts (
@@ -40,7 +41,7 @@ const stmtInsert = db.prepare(`
     VALUES (?, ?, ?, ?, ?)
 `)
 const stmtUpdateName = db.prepare(`UPDATE contacts SET push_name = ?, updated_at = ? WHERE id = ?`)
-const contactCache = new Map()
+const contactCache = new LRU(1000)
 
 function cacheContact(row) {
     if (!row) return null
