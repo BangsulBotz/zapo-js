@@ -17,8 +17,16 @@ export default {
     command: 'rthumb',
     alias: ['refreshthumb', 'rthumbnail', 'thumbrefresh'],
     category: 'owner',
-    description: 'Refresh metadata thumbnail/favicon: download ulang media dari sumber lama, upload ulang ke server, lalu simpan metadata baru ke database.\n\n' + usage({ prefix: '.', command: 'rthumb' }),
-    help: '`<nama>|all`',
+    description: `> Refresh metadata thumbnail/favicon: download ulang media dari sumber lama, upload ulang ke server, lalu simpan metadata baru.
+
+*Keterangan Format:*
+> \`<nama>\` = nama thumbnail/favicon.
+> \`all\` = refresh semua thumbnail.
+
+contoh penggunaan:
+> \`.rthumb <nama>\`
+> \`.rthumb all\``,
+    help: '<nama>/all',
     ownerOnly: true,
     typing: true,
     wait: true,
