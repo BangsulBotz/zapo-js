@@ -6,10 +6,14 @@ export default {
   command: 'pinterest',
   alias: ['pin', 'pint'],
   category: 'search',
-  description: 'Cari gambar Pinterest, hasil 5 gambar dalam bentuk album.\n\n' +
-    '*Format Penggunaan:*\n' +
-    '> `Cari gambar`\n> .pin <query>\n\n' +
-    '> `Contoh`\n> .pin furina genshin',
+  description: `> Mencari gambar di Pinterest. Hasil 5 gambar dikirim dalam bentuk album.
+
+*Keterangan Format:*
+> \`<query>\` = kata kunci pencarian.
+
+contoh penggunaan:
+> \`.pin <query>\`
+> \`.pin furina genshin\``,
   help: '<query>',
   typing: true,
   wait: true,
@@ -39,7 +43,7 @@ export default {
       const medias = urls.slice(0, 5).map(url => ({ image: url }))
       await sock.sendAlbum(m.chat, medias, { quote: m.raw })
     } catch (err) {
-      m.reply(`Gagal mencari gambar: ${err.response?.status || ''} ${err.message}`)
+      return m.reply(`Gagal mencari gambar: ${err.response?.status || ''} ${err.message}`)
     }
   }
 }
