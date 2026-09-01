@@ -9,10 +9,15 @@ export default {
   command: '$',
   alias: ['shell', 'exec'],
   category: 'owner',
-  description: 'Menjalankan perintah terminal atau shell.\n\n' +
-    '*Format Penggunaan:*\n' +
-    '> `Menjalankan perintah shell`\n> .$ <command>',
-  help: '`<command>`',
+  description: `> Menjalankan perintah terminal atau shell secara langsung dari chat.
+
+*Keterangan Format:*
+> \`<command>\` = perintah shell yang ingin dijalankan.
+
+contoh penggunaan:
+> \`.ls\`
+> \`.uptime\``,
+  help: '<command>',
   onlyOwner: true,
   wait: true,
 
