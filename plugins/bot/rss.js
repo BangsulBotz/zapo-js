@@ -5,7 +5,11 @@ export default {
   command: 'memory',
   alias: ['mem', 'ram', 'rss'],
   category: 'bot',
-  description: 'Menampilkan detail penggunaan memory bot.',
+  description: `> Menampilkan detail penggunaan memori bot meliputi RSS, heap total, heap used, external, dan array buffers.
+
+contoh penggunaan:
+> \`.memory\`
+> \`.ram\``,
   typing: true,
   async execute(m) {
     const mem = process.memoryUsage()
