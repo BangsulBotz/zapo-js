@@ -29,8 +29,10 @@ export default {
   command: 'backup',
   alias: ['getsc', 'getscript', 'backupproject'],
   category: 'owner',
-  description: 'Membuat backup project dan mengirimkannya ke grup tujuan.',
-  help: '`(tanpa argumen)`',
+  description: `> Membuat backup project dan mengirimkannya ke grup tujuan. Konfigurasi \`config.jidGroup\` di settings.js.
+
+contoh penggunaan:
+> \`.backup\``,
   onlyOwner: true,
   typing: true,
   wait: true,
