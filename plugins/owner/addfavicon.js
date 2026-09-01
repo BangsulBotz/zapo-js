@@ -6,12 +6,16 @@ export default {
     command: 'addfavicon',
     alias: ['addfav', 'addfavico'],
     category: 'owner',
-    description: 'Menyimpan metadata favicon ke database dengan nama tertentu.\n\n' +
-        '*Format Penggunaan:*\n' +
-        '> `Reply gambar`\n> .addfavicon <nama>\n\n' +
-        '> `Kirim gambar dengan caption`\n> .addfavicon <nama>\n\n' +
-        '> `Dari URL gambar`\n> .addfavicon <nama> <url>',
-    help: '`<nama>` `[url]`',
+    description: `> Menyimpan metadata favicon ke database dengan nama tertentu.
+
+*Keterangan Format:*
+> \`<nama>\` = nama unik untuk favicon.
+> \`[url]\` = URL gambar (opsional jika reply gambar).
+
+contoh penggunaan:
+> \`.addfavicon <nama>\` (reply gambar)
+> \`.addfavicon <nama> <url>\``,
+    help: '<nama> <url>',
     ownerOnly: true,
     typing: true,
     wait: true,
