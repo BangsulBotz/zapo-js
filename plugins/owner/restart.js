@@ -7,7 +7,10 @@ export default {
   command: 'restart',
   alias: ['restartbot', 'botrs', 'botres', 'resbot'],
   category: 'owner',
-  description: 'Memulai ulang process bot.',
+  description: `> Memulai ulang process bot.
+
+contoh penggunaan:
+> \`.restart\``,
   onlyOwner: true,
 
   async execute(m) {
