@@ -9,7 +9,6 @@ Penyempurnaan file publik, optimasi pemrosesan event, konsolidasi database, opti
 - **db/group.js** - Database gabungan untuk setting grup dan trust user/grup, menggantikan `db/groupDatabase.js` dan `db/trustedFeatures.js` dalam satu file `store/group.db`.
 - **db/botConfig.js** - Pengaturan bot berbasis JSON (`store/bot_settings.json`), menggantikan `db/botDatabase.js` yang menggunakan SQLite.
 - **lib/lru.js** - Utility class LRU cache untuk pembatasan jumlah item di memori.
-- **lib/memoryMonitor.js** - Pemantauan penggunaan memori periodik dengan logging ke CSV dan GC hint.
 - **lib/function.js** - Helper function untuk eval/run code (`transformImports`, `createFakeConsole`, `formatEvalResult`, `formatEvalError`, `executeAsyncCode`, `sendErrorToOwner`), dipindahkan dari `lib/utils.js`.
 - **lib/groupDetection.js** - Deteksi pelanggaran grup (link detection, kick sender, delete message, `enforceGroupPolicies`).
 - **lib/thumbnail.js** - Utility untuk save dan refresh metadata thumbnail ke database.
@@ -43,7 +42,7 @@ Penyempurnaan file publik, optimasi pemrosesan event, konsolidasi database, opti
 
 ### Diperbarui
 
-- **index.js** - Menambahkan import dan inisialisasi `startMemoryMonitor(30000)` untuk pemantauan memori periodik.
+- **index.js** - Import dan inisialisasi `startThumbAutoRefresh(sock)` setelah connect.
 - **handler.js** - Mengekspor `buildContact()`, memindahkan `transformImports`, `createFakeConsole`, `formatEvalResult`, `formatEvalError`, `executeAsyncCode` ke `lib/function.js`, menambahkan `NOISY_MESSAGE_FIELDS` untuk membersihkan field protobuf bising, menambahkan `attachCompactJsonInspect()` untuk inspeksi objek yang lebih rapi, menambahkan `stripDeviceId()` dan `isJidFromBot()` untuk deteksi JID bot, menggunakan `sock.getCredentials()` untuk `me` di eval context, membersihkan field bising dari `logRawDebug()`, serta menghapus auto-parse JSON pada `m.reply()`.
 - **src/messageHandler.js** - Menambahkan deduplikasi command dengan `handledCommandIds` (Set, max 4096), melewati pesan history/offline sebelum bot aktif dengan `isHistoricalMessage()`, menggunakan `sock.getCredentials()` untuk sender/pushName, menjadikan `self` sebagai master switch dengan `getBotSettingValue('self')` di atas `selfgc` grup, menambahkan pengecekan `isBotAdminOnly`, mengirim wait message via `sock.message.send()` langsung, menjalankan `enforceGroupPolicies()` untuk deteksi anti-anti, serta mendukung `silent logging` via `isSilentLog()`.
 - **src/connectionHandler.js** - Menambahkan delay reconnect berbeda per jenis error: `stream_error_replaced` 60 detik, `service_unavailable` 30 detik, error lain mulai 2 detik dengan exponential backoff maksimal 30 detik; menyimpan `lastReason` untuk tracking.
