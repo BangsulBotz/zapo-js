@@ -1,5 +1,4 @@
 // plugins/grup/idgc.js
-import { buildQuoteContext } from '../../lib/utils.js'
 
 export default {
   command: 'idgc',
@@ -31,8 +30,7 @@ export default {
             }
           ],
           messageVersion: 1
-        },
-        contextInfo: buildQuoteContext(m)
+        }
       }
     })
   }
