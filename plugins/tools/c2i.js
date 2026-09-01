@@ -93,11 +93,16 @@ export default {
   command: 'c2i',
   alias: ['tocarbon', '2carbon', 'carbonify'],
   category: 'tools',
-  description: 'Mengubah code menjadi gambar bergaya carbon.\n\n' +
-    '*Format Penggunaan:*\n' +
-    '> `Balas teks atau document berisi code lalu ketik:`\n> .c2i\n\n' +
-    '> `Kirim sebagai link preview thumbnail`\n> .c2i -ct',
-  help: '`(reply teks/docs)` `[-ct]`',
+  description: `> Mengubah code menjadi gambar bergaya carbon.
+
+*Keterangan Format:*
+> (reply teks/docs) = reply pesan yang berisi code.
+> \`-ct\` = kirim sebagai link preview thumbnail.
+
+contoh penggunaan:
+> \`.c2i\` (reply teks/docs)
+> \`.c2i -ct\` (reply teks/docs)`,
+  help: '(reply teks/docs)',
   typing: true,
   wait: true,
 
@@ -117,7 +122,13 @@ export default {
     }
 
     if (asThumbnail) {
-      const meta = await sock.uploadThumbnail(buffer)
+      let meta
+      try {
+        meta = await sock.uploadThumbnail(buffer)
+      } catch (err) {
+        console.error('[C2I] thumbnail upload error:', err?.message || err)
+        return m.reply('Gagal mengunggah thumbnail, coba lagi nanti.')
+      }
       const targetUrl = 'https://chat.whatsapp.com'
 
       return m.reply({
