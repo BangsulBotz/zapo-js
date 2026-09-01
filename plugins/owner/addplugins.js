@@ -18,15 +18,16 @@ export default {
   command: 'addplugins',
   alias: ['addplugin', 'newplugin'],
   category: 'owner',
-  description: `Menyimpan source plugin baru ke directory plugins.
+  description: `> Menyimpan source plugin baru ke directory plugins.
 
-*Format Penggunaan:*
-> \`Reply pesan source plugin, lalu ketik:\`
-> .addplugins <nama file.js>
+*Keterangan Format:*
+> (reply text/document plugin) = reply source code plugin.
+> \`<nama file.js>\` = nama file plugin.
 
-> \`Jika baris pertama memiliki path, cukup ketik:\`
-> .addplugins`,
-  help: '`<nama file>` atau `(reply text/document plugin)`',
+contoh penggunaan:
+> \`.addplugins <nama file.js>\` (reply source plugin)
+> \`.addplugins\` (jika baris pertama punya path)`,
+  help: '(reply text/document)',
   onlyOwner: true,
 
   async execute(m, { args, plugins }) {
