@@ -61,7 +61,7 @@ export function createSocket() {
       recoverFromClientTooOld: true,
       media: {
         processor: createMediaProcessor(),
-        generateThumbnail: false,
+        generateThumbnail: true,
         generateWaveform: false,
         normalizeVoiceNote: false
       }
