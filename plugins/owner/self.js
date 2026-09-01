@@ -1,21 +1,27 @@
 // plugins/owner/self.js
-import { config, updateSetting } from '../../settings.js'
+import { getBotSettingValue, updateBotSetting } from '../../lib/groupAndBot.js'
 
 export default {
   command: 'self',
   alias: ['selfbot', 'modebot'],
   category: 'owner',
-  description: 'Mengaktifkan atau menonaktifkan mode self bot.\n\n' +
-    '*Format Penggunaan:*\n' +
-    '> `Mengaktifkan self mode`\n> .self on\n\n' +
-    '> `Menonaktifkan self mode`\n> .self off',
+  description: `> Mengaktifkan atau menonaktifkan mode self bot. Hanya owner yang bisa mengontrol bot.
+
+*Keterangan Format:*
+> \`on\` = aktifkan self mode.
+> \`off\` = nonaktifkan self mode.
+
+contoh penggunaan:
+> \`.self on\`
+> \`.self off\``,
+  help:'<on/false>',
   onlyOwner: true,
 
   async execute(m, { args }) {
     const arg = args ? args[0]?.toLowerCase() : undefined
 
     if (!arg) {
-      const status = config.self ? '🔒 *ON* (private)' : '🔓 *OFF* (public)'
+      const status = getBotSettingValue('self') ? '🔒 *ON* (private)' : '🔓 *OFF* (public)'
       return m.reply(
         `Self Mode: ${status}\n\n` +
         `Use \`${m.prefix}self on\` or \`${m.prefix}self off\` to change.`
@@ -23,12 +29,12 @@ export default {
     }
 
     if (['on', 'true'].includes(arg)) {
-      updateSetting('self', true)
+      updateBotSetting('self', true)
       return m.reply('🔒 Self Mode is now *ON*. Only the owner can use commands.')
     }
 
     if (['off', 'false'].includes(arg)) {
-      updateSetting('self', false)
+      updateBotSetting('self', false)
       return m.reply('🔓 Self Mode is now *OFF*. Everyone can use commands.')
     }
 
