@@ -26,14 +26,11 @@ export default {
     alias: ['upload'],
     category: 'konvert',
     help: '`(reply)`',
-    description: `Mengupload media ke tmpfile.link dan mengirimkan link hasil upload.
+    description: `> Mengupload media ke tmpfile.link dan mengirimkan link hasil upload. Link berlaku selama 7 hari.
 
-*Format Penggunaan:*
-> \`Reply pesan media lalu ketik:\`
-> .up
-
-> \`Kirim media dengan caption command:\`
-> .up`,
+contoh penggunaan:
+> \`.up\` (reply pesan media)
+> \`.up\` (kirim media dengan caption command)`,
     typing: true,
 
     async execute(m, { sock }) {
@@ -41,8 +38,13 @@ export default {
 
         if (!target) return m.reply('❌ Reply media atau kirim media dengan caption dulu!')
 
-        const buffer = await target.download()
-        if (!buffer) return m.reply('❌ Gagal download media.')
+        let buffer
+        try {
+            buffer = await target.download()
+        } catch (err) {
+            return m.reply(`❌ Gagal download media: ${err?.message || 'file tidak tersedia.'}`)
+        }
+        if (!buffer?.length) return m.reply('❌ Gagal download media atau file kosong.')
 
         const ext = (target.mime || 'application/octet-stream').split('/')[1] || 'bin'
         const fileName = `file_${Date.now()}.${ext}`
@@ -66,7 +68,12 @@ export default {
 
         if (!res.ok) return m.reply(`❌ Upload gagal (${res.status})`)
 
-        const data = await res.json()
+        let data
+        try {
+            data = await res.json()
+        } catch {
+            return m.reply('❌ Respons server upload tidak valid.')
+        }
         const url = data.downloadLink
 
         if (!url) return m.reply('❌ Upload gagal, tidak ada link.')
