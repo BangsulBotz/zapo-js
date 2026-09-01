@@ -92,12 +92,14 @@ export default {
   command: 'updateplugins',
   alias: ['pluginsupdate', 'updateplugin'],
   category: 'owner',
-  description: `Memperbarui plugin berdasarkan command atau alias dari source code.
+  description: `> Memperbarui plugin berdasarkan command atau alias dari source code.
 
-*Format Penggunaan:*
-> \`Reply pesan source plugin, lalu ketik:\`
-> .updateplugins`,
-  help: '`(reply text/document plugin)`',
+*Keterangan Format:*
+> (reply text/document plugin) = reply source code plugin.
+
+contoh penggunaan:
+> \`.updateplugins\` (reply source plugin)`,
+  help: '(reply text/document)',
   onlyOwner: true,
 
   async execute(m, { plugins }) {
