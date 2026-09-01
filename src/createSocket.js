@@ -61,9 +61,9 @@ export function createSocket() {
       recoverFromClientTooOld: true,
       media: {
         processor: createMediaProcessor(),
-        generateThumbnail: true,
-        generateWaveform: true,
-        normalizeVoiceNote: true
+        generateThumbnail: false,
+        generateWaveform: false,
+        normalizeVoiceNote: false
       }
     },
     noopLogger
