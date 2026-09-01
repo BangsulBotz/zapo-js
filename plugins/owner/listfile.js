@@ -22,11 +22,15 @@ export default {
   command: 'listfile',
   alias: ['ls', 'dir', 'listdir', 'cekfolder'],
   category: 'owner',
-  description: 'Menampilkan daftar file dan folder beserta ukurannya.\n\n' +
-    '*Format Penggunaan:*\n' +
-    '> `Menampilkan isi directory tertentu`\n> .listfile <path>\n\n' +
-    '> `Menampilkan isi root project`\n> .listfile',
-  help: '`<directory>`',
+  description: `> Menampilkan daftar file dan folder beserta ukurannya.
+
+*Keterangan Format:*
+> \`[directory]\` = path directory (opsional, default: root project).
+
+contoh penggunaan:
+> \`.listfile\`
+> \`.listfile <directory>\``,
+  help: '<directory>',
   onlyOwner: true,
 
   async execute(m, { sock, args }) {
