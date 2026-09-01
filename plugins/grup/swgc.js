@@ -9,14 +9,23 @@ export default {
   onlyGroup: true,
 
   async execute(m, { sock, args }) {
-    if (!m.quoted) throw 'Reply pesan yang mau dijadikan status grup!'
-    if (!m.quoted.full) throw 'Data pesan tidak ditemukan!'
+    if (!m.quoted) return m.reply('Reply pesan yang mau dijadikan status grup!')
+    if (!m.quoted.full) return m.reply('Data pesan tidak ditemukan!')
 
     const full = m.quoted.full
-    const msgType = Object.keys(full).find(k => k.endsWith('Message') && k !== 'messageContextInfo')
-    if (!msgType) throw 'Tipe pesan tidak dikenali!'
 
-    const raw = { ...full[msgType] }
+    let msgType
+    let raw
+
+    if (typeof full.conversation === 'string') {
+      msgType = 'extendedTextMessage'
+      raw = { text: full.conversation }
+    } else {
+      msgType = Object.keys(full).find(k => k.endsWith('Message') && k !== 'messageContextInfo')
+      if (!msgType) return m.reply('Tipe pesan tidak dikenali atau tidak didukung!')
+      raw = { ...full[msgType] }
+    }
+
     const input = args.join(' ').trim()
 
     if (input) {
