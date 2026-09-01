@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url'
 import chalk from 'chalk'
 import { proto } from 'zapo-js'
 import { filterEncNodes } from '../lib/rawMessageUtils.js'
+import { LRU } from '../lib/lru.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const STORE_DIR = path.join(__dirname, '..', 'store')
@@ -19,11 +20,11 @@ const db = new Database(dbPath)
 db.pragma('journal_mode = WAL')
 db.pragma('synchronous = NORMAL')
 db.pragma('wal_autocheckpoint = 1000')
-db.pragma('journal_size_limit = 67108864')
+db.pragma('journal_size_limit = 16777216')
 db.pragma('page_size = 4096')
-db.pragma('cache_size = -16000')
+db.pragma('cache_size = -4000')
 db.pragma('temp_store = MEMORY')
-db.pragma('mmap_size = 268435456')
+db.pragma('mmap_size = 67108864')
 
 db.exec(`
     CREATE TABLE IF NOT EXISTS chats (
@@ -136,12 +137,28 @@ const stmtGetByChatBlob = db.prepare(`
     ORDER BY rm.timestamp DESC
     LIMIT ?
 `)
+const stmtGetByChatBlobAsc = db.prepare(`
+    SELECT rm.*, b.raw_bin, b.raw_json
+    FROM raw_messages rm
+    LEFT JOIN raw_messages_blob b ON rm.msg_id = b.msg_id
+    WHERE rm.chat_id = ?
+    ORDER BY rm.timestamp ASC, rm.id ASC
+    LIMIT ?
+`)
 const stmtGetBySenderBlob = db.prepare(`
     SELECT rm.*, b.raw_bin, b.raw_json
     FROM raw_messages rm
     LEFT JOIN raw_messages_blob b ON rm.msg_id = b.msg_id
     WHERE rm.chat_id = ? AND rm.sender_jid = ?
     ORDER BY rm.timestamp DESC
+    LIMIT ?
+`)
+const stmtGetBySenderBlobAsc = db.prepare(`
+    SELECT rm.*, b.raw_bin, b.raw_json
+    FROM raw_messages rm
+    LEFT JOIN raw_messages_blob b ON rm.msg_id = b.msg_id
+    WHERE rm.chat_id = ? AND rm.sender_jid = ?
+    ORDER BY rm.timestamp ASC, rm.id ASC
     LIMIT ?
 `)
 const stmtTopActive = db.prepare(`
@@ -167,7 +184,7 @@ const stmtLastActivePerSender = db.prepare(`
 const stmtPruneBlob = db.prepare(`DELETE FROM raw_messages_blob WHERE msg_id IN (SELECT msg_id FROM raw_messages WHERE timestamp < ?)`)
 const stmtPruneMeta = db.prepare(`DELETE FROM raw_messages WHERE timestamp < ?`)
 
-const jidCache = new Map()
+const jidCache = new LRU(1000)
 
 function getChatId(jid) {
     if (jidCache.has(jid)) return jidCache.get(jid)
@@ -221,16 +238,12 @@ function stripDeepQuotes(value, quoteDepth = 0) {
 }
 
 function encodeRawEvent(event) {
-    let payload = event
     try {
-        payload = structuredClone(event)
-        if (payload?.message) stripDeepQuotes(payload.message)
-    } catch { }
-
-    try {
+        const payload = { ...event }
+        if (payload.message) stripDeepQuotes(payload.message)
         return Buffer.from(proto.WebMessageInfo.encode(payload).finish())
     } catch {
-        return Buffer.from(JSON.stringify(payload, jsonReplacer))
+        return Buffer.from(JSON.stringify(event, jsonReplacer))
     }
 }
 
@@ -250,22 +263,16 @@ export function saveRawMessage(m) {
     if (m.nodes) {
         try {
             const filteredNodes = filterEncNodes(m.nodes)
-            nodesJson = filteredNodes ? JSON.stringify(filteredNodes, jsonReplacer) : null
-        } catch (err) {
-            console.error('[DB] gagal serialize nodes:', err.message)
-            nodesJson = null
-        }
+            nodesJson = filteredNodes ? JSON.stringify(filteredNodes) : null
+        } catch { }
     }
 
     let attrsJson = null
     const rawAttrs = m.raw?.rawNode?.attrs
     if (rawAttrs && typeof rawAttrs === 'object') {
         try {
-            attrsJson = JSON.stringify(rawAttrs, jsonReplacer)
-        } catch (err) {
-            console.error('[DB] gagal serialize attributes:', err.message)
-            attrsJson = null
-        }
+            attrsJson = JSON.stringify(rawAttrs)
+        } catch { }
     }
 
     const meta = {
@@ -293,8 +300,10 @@ export function saveRawMessage(m) {
         const { changes, id: insertedId } = saveTransaction(meta, m.id, rawBin)
 
         if (changes === 0) {
+            console.log(chalk.yellow(`[DB] ${m.id} sudah pernah tersimpan, skip.`))
             return { id: null, duplicate: true }
         }
+        console.log(chalk.green(`[DB] ${m.id} tersimpan, order=${insertedId}`))
         return { id: insertedId, duplicate: false }
     } catch (err) {
         console.error(chalk.red(`[DB FATAL SAVE ERROR] ${m.id}:`), err.message)
@@ -362,13 +371,40 @@ export function getMessagesByJid(jid, limit = 1000) {
 export function getMessagesByChatWithRaw(jid, limit = 100) {
     const chatId = getChatId(jid)
     if (!chatId) return []
-    return stmtGetByChatBlob.all(chatId, limit).map((row) => ({ meta: row, raw: decodeRow(row), nodes: decodeNodes(row) }))
+    return stmtGetByChatBlob.all(chatId, limit).map((row) => ({
+        meta: row,
+        raw: decodeRow(row),
+        nodes: decodeNodes(row),
+        attributes: decodeAttributes(row)
+    }))
+}
+
+export function getMessagesByChatWithRawAsc(jid, limit = 100) {
+    const chatId = getChatId(jid)
+    if (!chatId) return []
+    return stmtGetByChatBlobAsc.all(chatId, limit).map((row) => ({
+        meta: row,
+        raw: decodeRow(row),
+        nodes: decodeNodes(row),
+        attributes: decodeAttributes(row)
+    }))
 }
 
 export function getMessagesBySenderWithRaw(jid, senderJid, limit = 100) {
     const chatId = getChatId(jid)
     if (!chatId) return []
     return stmtGetBySenderBlob.all(chatId, senderJid, limit).map((row) => ({ meta: row, raw: decodeRow(row), nodes: decodeNodes(row), attributes: decodeAttributes(row) }))
+}
+
+export function getMessagesBySenderWithRawAsc(jid, senderJid, limit = 100) {
+    const chatId = getChatId(jid)
+    if (!chatId) return []
+    return stmtGetBySenderBlobAsc.all(chatId, senderJid, limit).map((row) => ({
+        meta: row,
+        raw: decodeRow(row),
+        nodes: decodeNodes(row),
+        attributes: decodeAttributes(row)
+    }))
 }
 
 export function getTopActive(jid, limit = 10) {
