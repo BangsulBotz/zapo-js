@@ -6,19 +6,17 @@ export default {
     command: 'delthumb',
     alias: ['deletethumb', 'hapusthumb', 'delthumbnail'],
     category: 'owner',
-    description: `Menghapus thumbnail dari koleksi database.
+    description: `> Menghapus thumbnail dari koleksi database.
 
-*Format Penggunaan:*
-> \`Hapus satu thumbnail\`
-> .delthumb <nama>
+*Keterangan Format:*
+> \`<nama>\` = nama thumbnail yang ingin dihapus.
+> \`<nama1>, <nama2>\` = hapus beberapa thumbnail sekaligus.
+> \`*\` = hapus semua thumbnail.
 
-> \`Hapus beberapa thumbnail\`
-> .delthumb <nama1>, <nama2>
-
-*Contoh:*
-> .delthumb anime
-> .delthumb anime, kartun`,
-    help: '<nama>[, <nama>]',
+contoh penggunaan:
+> \`.delthumb <nama>\`
+> \`.delthumb <nama1>, <nama2>\``,
+    help: '<nama>',
     ownerOnly: true,
     typing: true,
 
