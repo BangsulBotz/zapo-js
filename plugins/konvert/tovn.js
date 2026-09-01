@@ -4,10 +4,11 @@ export default {
   command: 'tovn',
   alias: ['tovoice', 'vn'],
   category: 'konvert',
-  description: 'Mengubah audio, video, atau document menjadi voice note.\n\n' +
-    '*Format Penggunaan:*\n' +
-    '> `Reply audio, video, atau document lalu ketik:`\n> .tovn',
-  help: '`(reply)`',
+  description: `> Mengubah audio, video, atau document menjadi voice note.
+
+contoh penggunaan:
+> \`.tovn\` (reply audio/video/document)`,
+  help: '(reply)',
   typing: true,
   wait: true,
 
@@ -33,7 +34,7 @@ export default {
       await sock.sendVoiceNote(m.chat, buffer, { quote: m })
     } catch (e) {
       console.error('[TOVN] error:', e)
-      m.reply('Gagal mengonversi media menjadi voice note.')
+      return m.reply('Gagal mengonversi media menjadi voice note.')
     }
   }
 }
