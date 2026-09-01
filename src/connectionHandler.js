@@ -75,16 +75,27 @@ async function requestPairing(sock) {
 function createReconnector(sock) {
   let attempt = 0
   let isReconnecting = false
+  let lastReason = ''
 
-  async function reconnect() {
+  async function reconnect(reason = '') {
     if (isReconnecting) return
     isReconnecting = true
+    lastReason = reason
 
     try {
       while (attempt < MAX_RECONNECT_ATTEMPTS) {
-        const delayMs = Math.min(30_000, 1_000 * 2 ** attempt)
+        let delayMs
+
+        if (reason.includes('replaced')) {
+          delayMs = 60_000
+        } else if (reason.includes('service_unavailable')) {
+          delayMs = 30_000
+        } else {
+          delayMs = Math.min(30_000, 2_000 * 2 ** attempt)
+        }
+
         attempt += 1
-        console.log(chalk.yellow(`[WA] Reconnect dalam ${delayMs}ms (percobaan ke-${attempt})`))
+        console.log(chalk.yellow(`[WA] Reconnect dalam ${delayMs / 1000}s (percobaan ke-${attempt})`))
         await new Promise(res => setTimeout(res, delayMs))
 
         try {
@@ -102,7 +113,7 @@ function createReconnector(sock) {
 
   return {
     reconnect,
-    resetAttempts: () => { attempt = 0 }
+    resetAttempts: () => { attempt = 0; lastReason = '' }
   }
 }
 
@@ -128,7 +139,7 @@ export function connectionHandler(sock) {
     }
 
     console.log(chalk.yellow(`[WA] Koneksi terputus: ${event.reason ?? 'unknown'} (code: ${event.code ?? '-'})`))
-    void reconnect()
+    void reconnect(event.reason ?? '')
   })
 
   sock.on('auth_qr', ({ qr, ttlMs }) => {
