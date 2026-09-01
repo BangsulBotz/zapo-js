@@ -62,8 +62,8 @@ export function createSocket() {
       media: {
         processor: createMediaProcessor(),
         generateThumbnail: true,
-        generateWaveform: false,
-        normalizeVoiceNote: false
+        generateWaveform: true,
+        normalizeVoiceNote: true
       }
     },
     noopLogger
