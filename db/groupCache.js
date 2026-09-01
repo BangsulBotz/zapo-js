@@ -1,8 +1,9 @@
 // db/groupCache.js
 
 import chalk from 'chalk'
+import { LRU } from '../lib/lru.js'
 
-const groupCache = new Map()
+const groupCache = new LRU(50)
 const inFlight = new Map()
 
 export async function getGroupMetadata(jid, sock, { force = false } = {}) {
@@ -13,6 +14,9 @@ export async function getGroupMetadata(jid, sock, { force = false } = {}) {
     const fetchPromise = sock.group.queryGroupMetadata(jid)
         .then((metadata) => {
             groupCache.set(jid, metadata)
+            console.log(chalk.blue(
+                `[GROUP CACHE] ${force ? 'Refetch' : 'Fetch'} metadata ${jid} (${metadata?.participants?.length || 0} participants)`
+            ))
             return metadata
         })
         .catch((err) => {
@@ -37,11 +41,40 @@ export function patchGroupMetadata(jid, mutateFn) {
     return metadata
 }
 
+export async function confirmParticipantAction(jid, sock, targets, action) {
+    await new Promise(resolve => setTimeout(resolve, 150))
+    const metadata = await getGroupMetadata(jid, sock, { force: true })
+    if (!metadata?.participants) return false
+
+    return targets.every((target) => {
+        const number = String(target).split('@')[0]
+        const participant = metadata.participants.find((item) => {
+            const ids = [item.jid, item.phoneNumber]
+                .filter(Boolean)
+                .map(value => String(value).split('@')[0])
+            return ids.includes(number)
+        })
+
+        if (action === 'add') return !!participant
+        if (action === 'remove') return !participant
+        if (action === 'promote') return !!participant?.isAdmin || !!participant?.isSuperAdmin
+        if (action === 'demote') return !!participant && !participant.isAdmin && !participant.isSuperAdmin
+        return false
+    })
+}
+
 function findParticipant(jid, participantJid) {
     const metadata = groupCache.get(jid)
-    return metadata?.participants?.find(
-        (p) => p.jid === participantJid || p.phoneNumber === participantJid
-    ) ?? null
+    if (!metadata?.participants) return null
+
+    const normalizedInput = participantJid?.split('@')[0]
+
+    return metadata.participants.find((p) => {
+        if (p.jid === participantJid) return true
+        if (p.phoneNumber === participantJid) return true
+        if (normalizedInput && (p.jid?.split('@')[0] === normalizedInput || p.phoneNumber?.split('@')[0] === normalizedInput)) return true
+        return false
+    }) ?? null
 }
 
 export const isAdminInGroup = (jid, participantJid) => {
