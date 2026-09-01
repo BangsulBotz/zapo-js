@@ -6,7 +6,10 @@ export default {
   command: 'owner',
   alias: ['creator'],
   category: 'bot',
-  description: 'Mengirim kontak owner bot.',
+  description: `> Mengirim kontak card (vCard) owner bot ke chat saat ini.
+
+contoh penggunaan:
+> \`.owner\``,
 
   async execute(m) {
     const number = String(config.owner).replace(/\D/g, '')
