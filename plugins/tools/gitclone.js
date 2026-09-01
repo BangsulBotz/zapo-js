@@ -24,11 +24,17 @@ export default {
   command: 'gitclone',
   alias: ['git', 'clonegit'],
   category: 'tools',
-  description: 'Mengunduh repository GitHub sebagai file ZIP.\n\n' +
-    '*Format Penggunaan:*\n' +
-    '> `Mengunduh repository dari URL atau user/repo`\n> .gitclone <url atau user/repo>\n\n' +
-    '> `Menggunakan link GitHub dari pesan yang di-reply`\n> .gitclone',
-  help: '<url repo>',
+  description: `> Mengunduh repository GitHub sebagai file ZIP.
+
+*Keterangan Format:*
+> \`<url atau user/repo>\` = link GitHub atau format user/repo.
+> (reply) = reply pesan yang berisi link GitHub.
+
+contoh penggunaan:
+> \`.gitclone <url>\`
+> \`.gitclone user/repo\`
+> \`.gitclone\` (reply pesan berisi link GitHub)`,
+  help: '<url repository>',
   typing: true,
   wait: true,
 
