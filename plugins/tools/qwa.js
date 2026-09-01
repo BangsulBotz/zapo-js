@@ -210,8 +210,11 @@ export default {
   command: 'qwa',
   alias: ['quotedwa', 'waquoted'],
   category: 'tools',
-  description: 'Membuat gambar percakapan WhatsApp dari pesan yang di-reply.',
-  help: '`(reply pesan)`',
+  description: `> Membuat gambar percakapan WhatsApp dari pesan yang di-reply.
+
+contoh penggunaan:
+> \`.qwa\` (reply pesan)`,
+  help: '(reply)',
   typing: true,
   wait: true,
 
@@ -223,6 +226,9 @@ export default {
         '> `Reply pesan yang ingin dibuat menjadi gambar lalu ketik:`\n' +
         `> ${m.prefix}${m.command}`
       )
+    }
+    if (!m.quoted.full) {
+      return m.reply('Data pesan yang di-reply tidak tersedia. Coba reply pesan lain.')
     }
 
     const quotedId = m.quoted.key?.id
