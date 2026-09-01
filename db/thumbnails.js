@@ -16,9 +16,9 @@ const db = new Database(dbPath)
 db.pragma('journal_mode = WAL')
 db.pragma('synchronous = NORMAL')
 db.pragma('wal_autocheckpoint = 1000')
-db.pragma('journal_size_limit = 67108864')
-db.pragma('cache_size = -4000')
-db.pragma('mmap_size = 134217728')
+db.pragma('journal_size_limit = 8388608')
+db.pragma('cache_size = -1000')
+db.pragma('mmap_size = 8388608')
 
 db.exec(`
     CREATE TABLE IF NOT EXISTS thumbnails (
