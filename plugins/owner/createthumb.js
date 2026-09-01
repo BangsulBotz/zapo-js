@@ -6,12 +6,18 @@ export default {
   command: 'ct',
   alias: ['createthumbnail'],
   category: 'owner',
-  description: 'Membuat thumbnail preview kustom dari URL atau reply gambar.\n\n' +
-    '*Format Penggunaan:*\n' +
-    '> `Menggunakan URL gambar`\n> .ct <url>\n\n' +
-    '> `Menggunakan URL gambar dan favicon`\n> .ct <url>, <url favicon>\n\n' +
-    '> `Menggunakan gambar yang di-reply`\n> .ct',
-  help: '(reply/url)',
+  description: `> Membuat thumbnail preview kustom dari URL atau reply gambar.
+
+*Keterangan Format:*
+> \`<url>\` = URL gambar.
+> \`<url>, <url favicon>\` = URL gambar + URL favicon.
+> (reply) = reply gambar.
+
+contoh penggunaan:
+> \`.ct <url>\`
+> \`.ct <url>, <url favicon>\`
+> \`.ct\` (reply gambar)`,
+  help: '<url> (reply)',
   typing: true,
   wait: true,
 
@@ -27,23 +33,35 @@ export default {
       return m.reply('Kirim URL gambar atau reply gambar!\n\nContoh:\n• ct <url>\n• ct <url>, <url favicon>\n• reply gambar lalu ketik: ct\n• reply gambar lalu ketik: ct ,<url favicon>')
     }
 
-    const mainImage = useQuotedAsMain
-      ? await m.quoted.download()
-      : rawMain
-
-    const meta = await sock.uploadThumbnail(mainImage)
-
-    if (rawFavicon) {
-      const faviconMeta = await sock.uploadThumbnail(rawFavicon, { favicon: true })
-      meta.faviconMmsMetadata = {
-        thumbnailDirectPath: faviconMeta.thumbnailDirectPath,
-        thumbnailSha256: faviconMeta.thumbnailSha256,
-        thumbnailEncSha256: faviconMeta.thumbnailEncSha256,
-        mediaKey: faviconMeta.mediaKey,
-        mediaKeyTimestamp: faviconMeta.mediaKeyTimestamp,
-        thumbnailWidth: faviconMeta.thumbnailWidth,
-        thumbnailHeight: faviconMeta.thumbnailHeight
+    let meta
+    try {
+      const mainImage = useQuotedAsMain
+        ? await m.quoted.download()
+        : rawMain
+      if (typeof mainImage === 'string' && !/^https?:\/\//i.test(mainImage)) {
+        return m.reply('URL gambar harus diawali http:// atau https://.')
       }
+      if (rawFavicon && !/^https?:\/\//i.test(rawFavicon)) {
+        return m.reply('URL favicon harus diawali http:// atau https://.')
+      }
+
+      meta = await sock.uploadThumbnail(mainImage)
+
+      if (rawFavicon) {
+        const faviconMeta = await sock.uploadThumbnail(rawFavicon, { favicon: true })
+        meta.faviconMmsMetadata = {
+          thumbnailDirectPath: faviconMeta.thumbnailDirectPath,
+          thumbnailSha256: faviconMeta.thumbnailSha256,
+          thumbnailEncSha256: faviconMeta.thumbnailEncSha256,
+          mediaKey: faviconMeta.mediaKey,
+          mediaKeyTimestamp: faviconMeta.mediaKeyTimestamp,
+          thumbnailWidth: faviconMeta.thumbnailWidth,
+          thumbnailHeight: faviconMeta.thumbnailHeight
+        }
+      }
+    } catch (err) {
+      console.error('[CT] thumbnail error:', err?.message || err)
+      return m.reply(`Gagal membuat thumbnail: ${err?.message || 'input tidak valid.'}`)
     }
 
     const targetUrl = 'https://chat.whatsapp.com'
