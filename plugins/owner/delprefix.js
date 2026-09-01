@@ -6,10 +6,16 @@ export default {
   command: 'delprefix',
   alias: ['hapusprefix'],
   category: 'owner',
-  description: 'Menghapus prefix dari daftar berdasarkan nama atau nomor urut.\n\n' +
-    '*Format Penggunaan:*\n' +
-    '> `Hapus berdasarkan prefix`\n> .delprefix <prefix>\n\n' +
-    '> `Hapus berdasarkan nomor urut`\n> .delprefix <nomor>',
+  description: `> Menghapus prefix dari daftar berdasarkan nama atau nomor urut.
+
+*Keterangan Format:*
+> \`<prefix>\` = prefix yang ingin dihapus.
+> \`<nomor>\` = nomor urut prefix.
+
+contoh penggunaan:
+> \`.delprefix !\`
+> \`.delprefix 1\``,
+  help: '<prefix/nomor>',
   onlyOwner: true,
 
   async execute(m, { args }) {
