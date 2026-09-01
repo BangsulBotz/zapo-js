@@ -7,11 +7,17 @@ export default {
   command: 'debug',
   alias: ['debuglog', 'eventlog'],
   category: 'owner',
-  description: 'Mengatur event logger debug bot.\n\n' +
-    '*Format Penggunaan:*\n' +
-    '> `Menampilkan status debug`\n> .debug\n\n' +
-    '> `Mengubah status event message`\n> .debug message <on/off>\n\n' +
-    '> `Mengubah status semua event`\n> .debug all <on/off>',
+  description: `> Mengatur event logger debug bot.
+
+*Keterangan Format:*
+> \`message\` = status event message.
+> \`all\` = status semua event.
+> \`on/off\` = aktifkan/nonaktifkan.
+
+contoh penggunaan:
+> \`.debug\` (lihat status)
+> \`.debug message on/off\`
+> \`.debug all on/off\``,
   onlyOwner: true,
 
   async execute(m, { args }) {
