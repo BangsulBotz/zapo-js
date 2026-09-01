@@ -1,18 +1,24 @@
 // plugins/owner/trustgc.js
 
-import { addTrustedFeature, removeTrustedFeature, getTrustedFeatures } from '../../db/trustedFeatures.js'
+import { addTrustedFeature, removeTrustedFeature, getTrustedFeatures } from '../../db/group.js'
 import { getCommandAliases } from '../../lib/utils.js'
 
 export default {
   command: 'trustgc',
   alias: ['trustgroup', 'trustgrup'],
   category: 'owner',
-  description: 'Mengizinkan grup ini menggunakan fitur tertentu tanpa pembatasan.\n\n' +
-    '*Format Penggunaan:*\n' +
-    '> `.trustgc <fitur/alias>` untuk trust fitur\n\n' +
-    '> `.trustgc -del <fitur/alias>` untuk hapus trust\n\n' +
-    '> `.trustgc -list` untuk lihat fitur yang di-trust',
-  help: '`<fitur>` | `-del <fitur>` | `-list`',
+  description: `> Mengizinkan grup ini menggunakan fitur tertentu tanpa pembatasan.
+
+*Keterangan Format:*
+> \`<fitur>\` = nama fitur atau alias.
+> \`-del <fitur>\` = hapus trust fitur.
+> \`-list\` = lihat fitur yang di-trust.
+
+contoh penggunaan:
+> \`.trustgc <fitur>\` (trust fitur)
+> \`.trustgc -del <fitur>\` (hapus trust)
+> \`.trustgc -list\` (lihat daftar)`,
+  help: '<fitur>',
   onlyOwner: true,
   groupOnly: true,
   typing: true,
@@ -57,7 +63,7 @@ export default {
     }
 
     const added = addTrustedFeature(m.chat, command, m.sender)
-    m.reply(added
+    return m.reply(added
       ? `🔓 *Trust Berhasil!*\n\n📌 *Grup:* \`${m.chat}\`\n🔧 *Fitur:* \`${command}\`\n\nSekarang semua anggota grup bisa pakai fitur ini tanpa batasan.`
       : `⚠️ Fitur \`${command}\` sudah ter-trust di grup ini.`)
   }
