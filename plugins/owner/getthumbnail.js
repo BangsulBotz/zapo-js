@@ -4,9 +4,11 @@ export default {
   command: 'getthumbnail',
   alias: ['gt', 'getthumb'],
   category: 'owner',
-  description: 'Mengambil thumbnail dari pesan yang di-reply.\n\n' +
-    '*Format Penggunaan:*\n' +
-    '> `Reply pesan yang memiliki thumbnail lalu ketik:`\n> .getthumbnail',
+  description: `> Mengambil thumbnail dari pesan yang di-reply.
+
+contoh penggunaan:
+> \`.getthumbnail\` (reply pesan yang memiliki thumbnail)`,
+  help: '(reply)',
   onlyOwner: true,
   typing: true,
 
