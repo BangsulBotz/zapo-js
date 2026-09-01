@@ -1,15 +1,20 @@
 // plugins/owner/lock.js
 
-import { setLocked, isLocked } from '../../lib/lockState.js'
+import { setLocked, isLocked } from '../../lib/utils.js'
 import { config } from '../../settings.js'
 export default {
   command: 'lock',
   alias: ['unlock'],
   category: 'owner',
-  description: 'Mengunci atau membuka bot sementara.\n\n' +
-    '*Format Penggunaan:*\n' +
-    '> `Mengunci bot`\n> .lock <nama bot>\n\n' +
-    '> `Membuka bot`\n> .unlock <nama bot>',
+  description: `> Mengunci atau membuka bot sementara.
+
+*Keterangan Format:*
+> \`<nama bot>\` = nama bot yang ingin dikunci/dibuka.
+
+contoh penggunaan:
+> \`.lock <nama bot>\` (kunci)
+> \`.unlock <nama bot>\` (buka)`,
+  help: '<nama bot>',
   onlyOwner: true,
 
   async execute(m, { args }) {

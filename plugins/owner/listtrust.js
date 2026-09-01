@@ -1,23 +1,26 @@
 // plugins/owner/listtrust.js
 
-import { getTrustedUserCommands } from '../../db/trustedFeatures.js'
+import { getTrustedUserCommands } from '../../db/group.js'
 import { getPushNameByJid } from '../../db/contacts.js'
-import { getCommandAliases, extractTargetJid } from '../../lib/utils.js'
+import { getCommandAliases, extractTarget } from '../../lib/utils.js'
 
 export default {
   command: 'listtrust',
   alias: ['trustlist'],
   category: 'owner',
-  description: 'Menampilkan daftar fitur yang sudah di-trust untuk user tertentu.\n\n' +
-    '*Format Penggunaan:*\n' +
-    '> `.listtrust <target>` untuk cek user lain\n\n' +
-    '> `.listtrust` untuk cek diri sendiri\n\n' +
-    '*Target bisa berupa:* @mention, reply pesan, atau ketik nomor langsung',
-  help: '`[@mention/reply/nomor]`',
+  description: `> Menampilkan daftar fitur yang sudah di-trust untuk user tertentu.
+
+*Keterangan Format:*
+> \`[@mention/reply/nomor]\` = target user (opsional, default: diri sendiri).
+
+contoh penggunaan:
+> \`.listtrust\` (cek diri sendiri)
+> \`.listtrust @mention\` (cek user lain)`,
+  help: '<@tag/reply/nomor>',
   typing: true,
 
   async execute(m, { args }) {
-    const target = extractTargetJid(m, args) || m.sender
+    const target = extractTarget(m, args) || m.sender
     const commands = getTrustedUserCommands(target)
     const label = getPushNameByJid(target) || target
 
@@ -31,6 +34,6 @@ export default {
       text += `\`${command}\`\n`
       text += `alias: ${aliases.length ? '_' + aliases.join(', ') + '_' : '-'}\n\n`
     }
-    m.reply(text.trim())
+    return m.reply(text.trim())
   }
 }
