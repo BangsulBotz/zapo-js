@@ -52,11 +52,16 @@ export default {
   command: 'addfile',
   alias: ['simpanfile', 'svfile'],
   category: 'owner',
-  description: 'Menyimpan media atau file yang di-reply ke directory tertentu.\n\n' +
-    '*Format Penggunaan:*\n' +
-    '> `Reply media lalu simpan ke directory default`\n> .addfile\n\n' +
-    '> `Reply media lalu simpan ke directory tertentu`\n> .addfile <directory>',
-  help: '`(reply)`',
+  description: `> Menyimpan media atau file yang di-reply ke directory tertentu.
+
+*Keterangan Format:*
+> (reply) = reply media yang ingin disimpan.
+> \`[directory]\` = path directory tujuan (opsional).
+
+contoh penggunaan:
+\`.addfile\` (reply media)
+\`.addfile <directory>\` (reply media)`,
+  help: '<directory> (reply)',
   onlyOwner: true,
 
   async execute(m, { args }) {
