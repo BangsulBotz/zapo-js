@@ -6,10 +6,10 @@ export default {
     command: 'listthumb',
     alias: ['listthumbnail', 'lt', 'thumblist', 'thumbnaillist'],
     category: 'owner',
-    description: `Menampilkan daftar semua thumbnail & favicon tersimpan, dikelompokkan per status.
+    description: `> Menampilkan daftar semua thumbnail & favicon tersimpan, dikelompokkan per status.
 
-\`Cara Penggunaan:\`
-> langsung kirim perintah: \`.listthumb\``,
+contoh penggunaan:
+> \`.listthumb\``,
     ownerOnly: true,
     typing: true,
 
