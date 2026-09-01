@@ -10,6 +10,9 @@ Penyempurnaan file publik, optimasi pemrosesan event, konsolidasi database, opti
 - **db/botConfig.js** - Pengaturan bot berbasis JSON (`store/bot_settings.json`), menggantikan `db/botDatabase.js` yang menggunakan SQLite.
 - **lib/lru.js** - Utility class LRU cache untuk pembatasan jumlah item di memori.
 - **lib/memoryMonitor.js** - Pemantauan penggunaan memori periodik dengan logging ke CSV dan GC hint.
+- **lib/function.js** - Helper function untuk eval/run code (`transformImports`, `createFakeConsole`, `formatEvalResult`, `formatEvalError`, `executeAsyncCode`, `sendErrorToOwner`), dipindahkan dari `lib/utils.js`.
+- **lib/groupDetection.js** - Deteksi pelanggaran grup (link detection, kick sender, delete message, `enforceGroupPolicies`).
+- **lib/thumbnail.js** - Utility untuk save dan refresh metadata thumbnail ke database.
 - **plugins/bot/os.js** - Plugin untuk menampilkan informasi sistem dan penggunaan resource server.
 - **plugins/bot/reaction.js** - Plugin untuk memberikan reaction ke pesan.
 - **plugins/grup/add.js** - Plugin untuk menambah anggota ke grup.
@@ -45,15 +48,15 @@ Penyempurnaan file publik, optimasi pemrosesan event, konsolidasi database, opti
 - **src/messageHandler.js** - Menambahkan deduplikasi command dengan `handledCommandIds` (Set, max 4096), melewati pesan history/offline sebelum bot aktif dengan `isHistoricalMessage()`, menggunakan `sock.getCredentials()` untuk sender/pushName, menjadikan `self` sebagai master switch dengan `getBotSettingValue('self')` di atas `selfgc` grup, menambahkan pengecekan `isBotAdminOnly`, mengirim wait message via `sock.message.send()` langsung, menjalankan `enforceGroupPolicies()` untuk deteksi anti-anti, serta mendukung `silent logging` via `isSilentLog()`.
 - **src/connectionHandler.js** - Menambahkan delay reconnect berbeda per jenis error: `stream_error_replaced` 60 detik, `service_unavailable` 30 detik, error lain mulai 2 detik dengan exponential backoff maksimal 30 detik; menyimpan `lastReason` untuk tracking.
 - **src/createSocket.js** - Menonaktifkan pemrosesan media otomatis (`generateThumbnail`, `generateWaveform`, `normalizeVoiceNote` diatur ke `false`).
-- **lib/utils.js** - Menambahkan `extractTarget()` untuk target tunggal, target jamak, dan target feature; mencegah mention LID berubah menjadi target PN duplikat; menambahkan `formatTargetUsage()` dan helper umum aksi participant; memindahkan state lock dari modul terpisah; memperbaiki validasi `formatBytes()`; menambahkan `formatActionResults()` beserta mapping status participant `403`, `404`, `408`, dan `500`; mengurangi kedalaman `cloneStripQuoted` dari 40 menjadi 20; mengoptimasi `reviveBase64Fields` dengan array loop; serta menghapus helper yang tidak digunakan.
-- **lib/loadPlugins.js** - Menambahkan import fresh untuk Node dan Bun, nonce reload yang konsisten, pembersihan file temporary, serta pengaturan hasil reload global.
-- **lib/notifRestart.js** - Menggunakan `sock.message.send()` secara langsung untuk notifikasi restart.
-- **lib/wrapper.js** - Mendukung format object `{ images, videos }` pada `sendAlbum()`, menambahkan thumbnail pada item album, dan menurunkan ukuran/quality thumbnail album.
+- **lib/utils.js** - Menambahkan `extractTarget()` untuk target tunggal/jamak/feature dengan validasi JID, `formatTargetUsage()`, `getParticipantActionStatus()` beserta mapping status `403`/`404`/`408`/`409`/`500`, `formatActionResults()`, `executeParticipantAction()` dengan konfirmasi IQ 500, memindahkan `isLocked()`/`setLocked()` dari `lib/lockState.js`, memindahkan `transformImports`/`createFakeConsole`/`formatEvalResult`/`formatEvalError`/`executeAsyncCode`/`sendErrorToOwner` ke `lib/function.js`, memperbaiki validasi `formatBytes()`, mengurangi kedalaman `cloneStripQuoted` dari 40 menjadi 20, mengonversi Long-like ke number di `trimRawReplacer` dan `cloneStripQuoted`, mengoptimasi `reviveBase64Fields` dengan array loop, menjadikan `isByteArrayLike`/`isPlainObject`/`isLongLike`/`WA_MEDIA_HOST` sebagai private.
+- **lib/loadPlugins.js** - Menambahkan `importFresh()` dengan nonce reload konsisten, mendukung Node.js dan Bun secara terpisah, membersihkan file temporary pattern `.tmp-*.mjs`, mengatur hasil reload global tanpa pengecekan error.
+- **lib/notifRestart.js** - Menyederhanakan pengiriman notifikasi restart menjadi hanya `sock.message.send()`, menghapus fallback ke `sock.sendMessage`/`sock.deps.messageDispatch`/`sock.deps.messageCoordinator`.
+- **lib/wrapper.js** - Menambahkan `sendStickerPack()` untuk mengirim paket stiker, menambahkan thumbnail 120px quality 10 pada setiap item album di `sendAlbum()`, mendukung format object `{ images, videos }` pada `sendAlbum()`, menurunkan ukuran/quality thumbnail album.
 - **lib/groupAndBot.js** - Mengimpor dari `db/group.js` dan `db/botConfig.js`, menggunakan LRU cache(100) untuk `groupSettingsCache`.
-- **db/groupCache.js** - Mencocokkan participant berdasarkan nomor/JID dengan normalisasi bagian sebelum `@`, mencatat fetch/refetch metadata dan jumlah participant, mengonfirmasi hasil aksi participant setelah IQ 500, serta menggunakan LRU cache(50) untuk metadata grup.
-- **db/rawMessage.js** - Mengganti `structuredClone(event)` dengan shallow clone `{...event}`, menambahkan LRU cache(1000) untuk `jidCache`, mengurangi SQLite mmap dari 256 MB menjadi 64 MB dan cache dari 16 MB menjadi 4 MB, menambahkan query ascending untuk pesan per chat dan per sender, mengembalikan decoded attributes, serta menampilkan kembali nomor `order` saat pesan berhasil disimpan.
-- **db/contacts.js** - Menambahkan LRU cache(1000) untuk `contactCache` dan mengurangi SQLite mmap dari 256 MB menjadi 8 MB.
-- **db/thumbnails.js** - Mengurangi page cache SQLite thumbnail dari 4 MB menjadi 1 MB dan mapping virtual dari 128 MB menjadi 32 MB tanpa mengubah format metadata atau fungsi thumbnail.
+- **db/groupCache.js** - Menggunakan LRU cache(50) untuk metadata grup, menambahkan logging fetch/refetch metadata, menambahkan `confirmParticipantAction()` untuk verifikasi aksi participant setelah IQ 500, serta mencocokkan participant berdasarkan nomor/JID dengan normalisasi bagian sebelum `@`.
+- **db/rawMessage.js** - Mengganti `structuredClone(event)` dengan shallow clone `{...event}`, menambahkan LRU cache(1000) untuk `jidCache`, mengurangi SQLite journal_size_limit dari 64 MB menjadi 16 MB, cache dari 16 MB menjadi 4 MB, dan mmap dari 256 MB menjadi 64 MB, menambahkan query ascending untuk pesan per chat dan per sender (`getMessagesByChatWithRawAsc`, `getMessagesBySenderWithRawAsc`), mengembalikan decoded attributes pada semua query, menyederhanakan error handling, serta menambahkan logging untuk save/duplicate.
+- **db/contacts.js** - Menambahkan LRU cache(1000) untuk `contactCache`, mengurangi SQLite journal_size_limit dari 64 MB menjadi 8 MB, cache dari 8 MB menjadi 2 MB, dan mmap dari 256 MB menjadi 8 MB.
+- **db/thumbnails.js** - Mengurangi SQLite journal_size_limit dari 64 MB menjadi 8 MB, page cache dari 4 MB menjadi 1 MB, dan mapping virtual dari 128 MB menjadi 8 MB.
 - **plugins/bot/ping.js** - Menampilkan latency aktual dengan mengedit pesan ping; alias `p2` dihapus.
 - **plugins/grup/idgc.js** - Menghapus context quote yang tidak diperlukan.
 - **plugins/grup/swgc.js** - Mendukung quoted message berbentuk `conversation`.
@@ -64,7 +67,7 @@ Penyempurnaan file publik, optimasi pemrosesan event, konsolidasi database, opti
 - **plugins/owner/run.js** dan **eval.js** - Mengirim error eksekusi kode langsung ke pengguna.
 - **plugins/konvert/tovn.js**, **plugins/search/pinterest.js**, **plugins/tools/get.js**, **plugins/owner/trustgc.js**, dan **listtrust.js** - Menunggu balasan error/status agar rejection pengiriman tidak menjadi unhandled rejection; `get.js` juga memvalidasi URL HTTP/HTTPS, membersihkan tanda baca, memperbaiki deteksi MIME, dan memperketat deteksi konten teks.
 - **package.json** - Menambahkan script test, dependency native, fake server sebagai dev dependency, dan trusted dependency untuk package native/sharp.
-- **patch.js** - Menambahkan patch encoding media untuk `pollCreationOptionImageMessage` agar tipe media gambar dikenali zapo-js.
+- **Seluruh plugins** - Menyegarkan format deskripsi dan field `help` pada semua plugin (`bot/`, `chanel/`, `grup/`, `konvert/`, `owner/`, `search/`, `tools/`) agar konsisten dengan format baru: setiap baris teks diawali `>`, section header tanpa `>`, dan command example tanpa `>`.
 
 ### Dihapus
 
