@@ -1,30 +1,43 @@
 // plugins/owner/untrust.js
 
-import { removeTrustedUser } from '../../db/trustedFeatures.js'
-import { getPushNameByJid } from '../../db/contacts.js'
-import { extractFeatureTarget } from '../../lib/utils.js'
+import { removeTrustedUser } from '../../db/group.js'
+import { extractTarget } from '../../lib/utils.js'
 
 export default {
   command: 'untrust',
   alias: ['untrustuser'],
   category: 'owner',
-  description: 'Menghapus izin user tertentu untuk fitur yang sudah di-trust.\n\n' +
-    '*Format Penggunaan:*\n' +
-    '> `.untrust <fitur/alias> <target>`\n\n' +
-    '*Target bisa berupa:* @mention, reply pesan dia, atau ketik nomornya langsung',
-  help: '`<fitur>` `<@mention/reply/nomor>`',
+  description: `> Menghapus izin user tertentu untuk fitur yang sudah di-trust.
+
+*Keterangan Format:*
+> \`<fitur>\` = nama fitur atau alias.
+> \`<@mention/reply/nomor>\` = target user.
+
+contoh penggunaan:
+\`.untrust <fitur> @mention\`
+\`.untrust <fitur> 628xxxx\``,
+  help: '<fitur> <@tag/reply/nomor>',
   onlyOwner: true,
   typing: true,
 
   async execute(m, { args }) {
-    const { error, target, plugin } = extractFeatureTarget(m, args)
-    if (error) return m.reply(error)
+    const result = extractTarget(m, args, { requireFeature: true })
+    if (result.error) return m.reply(result.error)
+    const { target, plugin } = result
+    if (!target) return m.reply('❌ Target tidak terdeteksi. Reply pesan, mention, atau masukkan nomor.')
 
     const { removed } = removeTrustedUser(target, plugin.command)
-    const label = getPushNameByJid(target) || target
+    const label = `@${target.split('@')[0]}`
 
-    m.reply(removed
+    const text = removed
       ? `✅ Trust dihapus.\n\n👤 *User:* ${label}\n🔧 *Fitur:* \`${plugin.command}\``
-      : `⚠️ User ini memang tidak pernah di-trust untuk fitur \`${plugin.command}\`.`)
+      : `⚠️ User ini memang tidak pernah di-trust untuk fitur \`${plugin.command}\`.`
+
+    try {
+      return await m.reply(m.chat, text, { mentions: [target] })
+    } catch (err) {
+      console.warn('[UNTRUST] Perubahan tersimpan, tetapi konfirmasi gagal dikirim:', err?.message || err)
+      return null
+    }
   }
 }
