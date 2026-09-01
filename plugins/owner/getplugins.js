@@ -7,15 +7,16 @@ export default {
   command: 'getplugins',
   alias: ['gp'],
   category: 'owner',
-  description: `Mengambil source plugin berdasarkan command atau alias.
+  description: `> Mengambil source plugin berdasarkan command atau alias.
 
-*Format Penggunaan:*
-> \`Mengirim source sebagai file\`
-> .gp <command/alias>
+*Keterangan Format:*
+> \`<command/alias>\` = nama command atau alias plugin.
+> \`-cat\` = tampilkan source langsung (bukan file).
 
-> \`Menampilkan source langsung\`
-> .gp -cat <command/alias>`,
-  help: '`<command/alias>` atau `-cat <command/alias>`',
+contoh penggunaan:
+> \`.gp <command/alias>\` (kirim sebagai file)
+> \`.gp -cat <command/alias>\` (tampilkan langsung)`,
+  help: '<command/alias>',
   onlyOwner: true,
 
   async execute(m, { plugins }) {
