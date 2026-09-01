@@ -239,7 +239,7 @@ function stripDeepQuotes(value, quoteDepth = 0) {
 
 function encodeRawEvent(event) {
     try {
-        const payload = { ...event }
+        const payload = { ...event, message: structuredClone(event.message) }
         if (payload.message) stripDeepQuotes(payload.message)
         return Buffer.from(proto.WebMessageInfo.encode(payload).finish())
     } catch {
