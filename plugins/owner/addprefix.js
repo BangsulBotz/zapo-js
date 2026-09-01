@@ -8,9 +8,14 @@ export default {
   command: 'addprefix',
   alias: ['tambahprefix'],
   category: 'owner',
-  description: 'Menambahkan prefix baru ke daftar prefix bot.\n\n' +
-    '*Format Penggunaan:*\n' +
-    '> `Menambahkan prefix baru`\n> .addprefix <prefix>',
+  description: `> Menambahkan prefix baru ke daftar prefix bot.
+
+*Keterangan Format:*
+> \`<prefix>\` = karakter prefix baru (misal: !, ., #).
+
+contoh penggunaan:
+> \`.addprefix !\``,
+  help: '<prefix>',
   onlyOwner: true,
 
   async execute(m, { args }) {
