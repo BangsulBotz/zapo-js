@@ -20,11 +20,19 @@ export default {
   command: 'sendch',
   alias: ['sendchanel', 'sendchannel', 'sch'],
   category: 'chanel',
-  description: 'Mengirim ulang pesan yang di-reply ke channel WhatsApp.\n\n' +
-    '*Format Penggunaan:*\n' +
-    '> `Mengirim ke URL channel`\n> .sendch <url channel>\n\n' +
-    '> `Mengirim ke JID channel`\n> .sendch <jid channel>',
-  help: '`(reply pesan)`',
+  description: `> Mengirim ulang pesan yang di-reply ke channel WhatsApp.
+
+*Keterangan Format:*
+> \`<url channel>\` = link undangan channel tujuan.
+> \`<jid channel>\` = JID channel tujuan (format: 120363xxx@newsletter).
+
+contoh penggunaan:
+> \`.sendch <url channel>\` (reply pesan)
+> \`.sendch <jid channel>\` (reply pesan)
+
+*Catatan:*
+> fitur ini hanya bisa digunakan oleh owner. wajib reply pesan yang ingin dikirim.`,
+  help: '<url/jid> (reply)',
   ownerOnly: true,
   typing: true,
 
