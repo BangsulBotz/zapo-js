@@ -11,7 +11,10 @@ export default {
   command: 'reload',
   alias: ['rld', 'reloadplugins'],
   category: 'owner',
-  description: 'Memuat ulang seluruh plugin bot.',
+  description: `> Memuat ulang seluruh plugin bot.
+
+contoh penggunaan:
+> \`.reload\``,
   onlyOwner: true,
 
   async execute(m) {
