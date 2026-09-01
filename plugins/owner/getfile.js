@@ -48,10 +48,14 @@ export default {
   command: 'getfile',
   alias: ['gf', 'ambilfile', 'sendfile'],
   category: 'owner',
-  description: 'Mengirim file dari server bot sebagai document.\n\n' +
-    '*Format Penggunaan:*\n' +
-    '> `Mengirim file dari path tertentu`\n> .getfile <path file>',
-  help: '`<path file>`',
+  description: `> Mengirim file dari server bot sebagai document.
+
+*Keterangan Format:*
+> \`<path file>\` = path file yang ingin diambil.
+
+contoh penggunaan:
+> \`.getfile settings.js\``,
+  help: '<path file>',
   typing: true,
   onlyOwner: true,
 
