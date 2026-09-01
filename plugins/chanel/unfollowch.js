@@ -5,11 +5,21 @@ export default {
   command: 'unfollowch',
   alias: ['unfollowchanel', 'unfollowchannel', 'ufch', 'unfollch', 'unfolch'],
   category: 'chanel',
-  description: 'Berhenti mengikuti channel WhatsApp dari link atau JID.\n\n' +
-    '*Format Penggunaan:*\n' +
-    '> `Menggunakan URL channel`\n> .unfollowch <url channel>\n\n' +
-    '> `Menggunakan JID channel`\n> .unfollowch <jid channel>\n\n' +
-    '> `Menggunakan link channel dari pesan yang di-reply`\n> .unfollowch',
+  description: `> Berhenti mengikuti channel WhatsApp dari link atau JID.
+
+*Keterangan Format:*
+> \`<url channel>\` = link undangan channel.
+> \`<jid channel>\` = JID channel (format: 120363xxx@newsletter).
+> (reply) = reply pesan yang berisi link channel.
+
+contoh penggunaan:
+\`.unfollowch <url channel>\`
+\`.unfollowch <jid channel>\`
+\`.unfollowch\` (reply pesan berisi link channel)
+
+*Catatan:*
+> fitur ini hanya bisa digunakan oleh owner.`,
+  help: '<url/jid>/(reply)',
   ownerOnly: true,
   typing: true,
 
