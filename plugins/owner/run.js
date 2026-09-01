@@ -39,10 +39,11 @@ export default {
   command: 'run',
   alias: ['runcode', 'runfile', 'execfile'],
   category: 'owner',
-  description: 'Menjalankan kode JavaScript dari pesan atau document yang di-reply.\n\n' +
-    '*Format Penggunaan:*\n' +
-    '> `Reply pesan atau document berisi code lalu ketik:`\n> .run',
-  help: '`(reply pesan/document)`',
+  description: `> Menjalankan kode JavaScript dari pesan atau document yang di-reply.
+
+contoh penggunaan:
+> \`.run\` (reply pesan/document berisi code)`,
+  help: '(reply pesan/document)',
   onlyOwner: true,
 
   async execute(m, { sock }) {
@@ -51,6 +52,10 @@ export default {
     if (!code.trim()) return m.reply('❌ Code kosong.')
     if (!sock?.message) return m.reply('❌ sock.message belum siap. Coba lagi sebentar.')
 
-    return m.reply(await runUserCode(code, m, sock))
+    try {
+      return m.reply(await runUserCode(code, m, sock))
+    } catch (err) {
+      return m.reply(`❌ Kode gagal dijalankan: ${err?.message || err}`)
+    }
   }
 }
