@@ -6,7 +6,11 @@ export default {
   command: 'runtime',
   alias: ['rt', 'uptime', 'status'],
   category: 'bot',
-  description: 'Menampilkan status aktif dan penggunaan resource bot.',
+  description: `> Menampilkan status aktif bot (uptime), versi Node.js, platform, penggunaan memori, RAM, swap, dan info CPU.
+
+contoh penggunaan:
+> \`.runtime\`
+> \`.uptime\``,
   typing: true,
 
   async execute(m) {
