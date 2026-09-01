@@ -6,19 +6,16 @@ export default {
     command: 'delfavicon',
     alias: ['deletefavicon', 'hapusfavicon'],
     category: 'owner',
-    description: `Menghapus favicon dari koleksi database.
+    description: `> Menghapus favicon dari koleksi database.
 
-*Format Penggunaan:*
-> \`Hapus satu favicon\`
-> .delfavicon <nama>
+*Keterangan Format:*
+> \`<nama>\` = nama favicon yang ingin dihapus.
+> \`<nama1>, <nama2>\` = hapus beberapa favicon sekaligus.
 
-> \`Hapus beberapa favicon\`
-> .delfavicon <nama1>, <nama2>
-
-*Contoh:*
-> .delfavicon google
-> .delfavicon google, github`,
-    help: '<nama>[, <nama>]',
+contoh penggunaan:
+> \`.delfavicon google\`
+> \`.delfavicon google, github\``,
+    help: '<nama>',
     ownerOnly: true,
     typing: true,
 
