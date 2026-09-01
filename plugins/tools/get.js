@@ -125,12 +125,12 @@ async function resolveFileInfo(buffer, url, contentType) {
     if (magic.ext === 'zip') return detectFromZipContent(buffer)
     return magic
   }
-  const fromUrl = detectFromUrl(url)
-  if (fromUrl) return fromUrl
   const ct = contentType?.split(';')[0]?.trim() || ''
   if (MIME_LABEL[ct]) return { ext: MIME_LABEL[ct].ext, mime: ct }
-  const ext = ct.split('/')[1]?.split(';')[0]?.trim() || 'bin'
-  return { ext, mime: ct || 'application/octet-stream' }
+  if (ct) return { ext: ct.split('/')[1] || 'bin', mime: ct }
+  const fromUrl = detectFromUrl(url)
+  if (fromUrl) return fromUrl
+  return { ext: 'bin', mime: 'application/octet-stream' }
 }
 
 async function fetchWithFallback(url, attempt = 1) {
@@ -162,25 +162,40 @@ export default {
   command: 'get',
   alias: ['fetch'],
   category: 'tools',
-  description: 'Mengambil data atau media dari URL secara langsung.\n\n' +
-    '*Format Penggunaan:*\n' +
-    '> `Mengambil data dari URL`\n> .get <url>\n\n' +
-    '> `Mengambil URL dari pesan yang di-reply`\n> .get',
-  help: '<url>',
+  description: `> Mengambil data atau media dari URL secara langsung. Mendukung gambar, video, audio, teks, dan file lainnya.
+
+*Keterangan Format:*
+> \`<url>\` = URL yang valid (http/https).
+> (reply) = reply pesan yang berisi URL.
+
+contoh penggunaan:
+> \`.get <url>\`
+> \`.get\` (reply pesan berisi URL)`,
+  help: '<url> / (reply)',
   typing: true,
   wait: true,
 
   async execute(m, { sock, args }) {
 
-    let url = args.find(a => /^https?:\/\//.test(a)) || ''
+    let url = args.find(a => /^https?:\/\/[^\s]+$/i.test(a))
+      ?.trim()
+      .replace(/[),.;!?]+$/, '') || ''
 
     if (!url && m.quoted?.text) {
       const urls = m.quoted.text.match(/https?:\/\/[^\s<>"']+/gi)
-      if (urls) url = urls[0]
+      if (urls) url = urls[0].replace(/[),.;!?]+$/, '')
     }
 
     if (!url) {
       return m.reply(`Masukkan URL yang valid!\nContoh: ${m.prefix}${m.command} https://example.com/file.mp4`)
+    }
+
+    try {
+      const parsed = new URL(url)
+      if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('protocol')
+      url = parsed.href
+    } catch {
+      return m.reply('Masukkan URL HTTP/HTTPS yang valid!')
     }
 
     const startTime = performance.now()
@@ -209,16 +224,10 @@ export default {
         `📄 *Tipe:* ${mime}`
 
       if (/^image/.test(mime)) {
-        if (ext === 'webp') {
-          return sock.message.send(m.chat, { type: 'sticker', media: buffer, mimetype: mime }, { quote: m.raw })
-        }
         return sock.message.send(m.chat, { type: 'image', media: buffer, mimetype: mime, caption }, { quote: m.raw })
       }
 
       if (/^video/.test(mime)) {
-        if (ext === 'webm') {
-          return sock.message.send(m.chat, { type: 'sticker', media: buffer, mimetype: mime }, { quote: m.raw })
-        }
         return sock.message.send(m.chat, { type: 'video', media: buffer, mimetype: mime, caption }, { quote: m.raw })
       }
 
@@ -226,7 +235,7 @@ export default {
         return sock.message.send(m.chat, { type: 'audio', media: buffer, mimetype: mime, ptt: false }, { quote: m.raw })
       }
 
-      if (/^text|json|javascript|xml/.test(mime)) {
+      if (/^(text\/|application\/(json|javascript|xml))/.test(mime)) {
         const text = buffer.toString('utf-8')
         const header = `${caption}\n\n`
         if ((header + text).length > 4000) return sendAsFile(sock, m, buffer, `result.${ext}`, mime, caption)
@@ -242,7 +251,7 @@ export default {
       if (status === 403) errMsg += '\n\n💡 Server pakai proteksi / IP diblokir / butuh login'
       else if (status === 429) errMsg += '\n\n⚠️ Rate limited — coba lagi nanti.'
       else if (err.message.includes('exceeded')) errMsg += '\n*File terlalu besar (maks 100MB)*'
-      m.reply(errMsg)
+      return m.reply(errMsg)
     }
   }
 }
