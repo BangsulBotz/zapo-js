@@ -5,10 +5,16 @@ export default {
   command: 'idch',
   alias: ['idchanel', 'idchannel', 'channelid', 'chanelid'],
   category: 'chanel',
-  description: 'Menampilkan ID Channel dari link WhatsApp Channel.\n\n' +
-    '*Format Penggunaan:*\n' +
-    '> `Menggunakan URL channel`\n> .idch <url channel>\n\n' +
-    '> `Menggunakan link channel dari pesan yang di-reply`\n> .idch',
+  description: `> Menampilkan ID Channel dari link WhatsApp Channel.
+
+*Keterangan Format:*
+> \`<url channel>\` = link undangan channel.
+> (reply) = reply pesan yang berisi link channel.
+
+contoh penggunaan:
+> \`.idch <url channel>\`
+> \`.idch\` (reply pesan berisi link channel)`,
+  help: '<url/jid>/(reply)',
   typing: true,
 
   async execute(m, { sock, args }) {
