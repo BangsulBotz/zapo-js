@@ -161,15 +161,17 @@ function buildCategoryMenuText(groups, categoryKey, usedPrefix) {
 export default {
     command: 'menu',
     category: 'bot',
-    description: `Menampilkan daftar menu fitur bot berdasarkan kategori.
+    description: `> Menampilkan daftar menu fitur bot berdasarkan kategori.
 
-*Format Penggunaan:*
-> \`Menampilkan semua fitur\`
-> .menu all
+*Keterangan Format:*
+> \`all\` = menampilkan semua fitur.
+> \`<kategori>\` = menampilkan fitur berdasarkan kategori tertentu.
 
-> \`Menampilkan fitur berdasarkan kategori\`
-> .menu <kategori>`,
-    help: '`[kategori|all]`',
+contoh penggunaan:
+> \`.menu\`
+> \`.menu all\`
+> \`.menu grup\``,
+    help: '<kategori> / all',
     typing: true,
 
     async execute(m, { plugins, sock }) {
