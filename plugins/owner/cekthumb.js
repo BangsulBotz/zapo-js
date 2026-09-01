@@ -36,18 +36,18 @@ export default {
     command: 'cekthumb',
     alias: ['cekthumbnail', 'thumbnailcek', 'thumbcek'],
     category: 'owner',
-    description: `Menampilkan info thumbnail/favicon dari database — semua status (private maupun random) — lalu mengirim preview link pakai sendThumbnail.
+    description: `> Menampilkan info thumbnail/favicon dari database — semua status (private maupun random).
 
-*Format Penggunaan:*
-> \`Cek thumbnail\`
-> .cekthumb <nama>
+*Keterangan Format:*
+> \`<nama>\` = nama thumbnail.
+> \`<nama>, <nama favicon>\` = cek thumbnail + favicon (pemisah pakai \`|\`).
+> \`random\` = pakai data acak dari pool random.
 
-> \`Cek thumbnail + favicon\` (pemisah pakai \`,\` atau \`|\`)
-> .cekthumb <nama>, <nama favicon>
-
-> \`Pakai data acak dari pool random\`
-> .cekthumb random`,
-    help: '`<nama thumb>` `[| <nama favicon>]` — kata kunci: `random`',
+contoh penggunaan:
+> \`.cekthumb <nama>\`
+> \`.cekthumb <nama>, <nama favicon>\`
+> \`.cekthumb random | random\``,
+    help: '<nama thumb> | <nama favicon>',
     ownerOnly: true,
     typing: true,
 
