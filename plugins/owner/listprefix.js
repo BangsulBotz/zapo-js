@@ -6,7 +6,10 @@ export default {
   command: 'listprefix',
   alias: ['daftarprefix', 'prefixlist'],
   category: 'owner',
-  description: 'Menampilkan daftar prefix aktif beserta status mode tanpa prefix.',
+  description: `> Menampilkan daftar prefix aktif beserta status mode tanpa prefix.
+
+contoh penggunaan:
+> \`.listprefix\``,
   onlyOwner: true,
 
   async execute(m) {
