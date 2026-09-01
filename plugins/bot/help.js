@@ -13,19 +13,37 @@ function formatAliases(plugin) {
       : []
 
   if (!aliases?.length) return '-'
-  return aliases.map(alias => `\`${alias}\``).join(', ')
+  return aliases.map(alias => `- ${alias}`).join('\n')
+}
+
+function getAccessLevel(plugin) {
+  const access = []
+  if (plugin.onlyOwner) access.push('Owner Only')
+  if (plugin.onlyGroup) access.push('Group Only')
+  if (plugin.onlyAdmin) access.push('Admin Only')
+  if (plugin.onlyBotAdmin) access.push('Bot Admin Only')
+  return access.length ? access.join(' & ') : 'Semua Orang'
+}
+
+function formatCategoryName(category) {
+  if (!category || category === 'root') return 'Lainnya'
+  return category
+    .split(/[-_/]/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
 }
 
 export default {
   command: 'help',
   alias: ['command'],
   category: 'bot',
-  description: `Menampilkan detail command atau alias plugin.
+  description: `> Menampilkan informasi detail tentang command atau alias plugin.
 
-*Format Penggunaan:*
-> \`Menampilkan informasi plugin\`
-> .help <command/alias>`,
-  help: '`<command/alias>`',
+contoh penggunaan:
+> \`.help <command/alias>\`
+> \`.help ping\`
+> \`.help antilink\``,
+  help: '<command/alias>',
 
   async execute(m, { plugins, sock }) {
     const requested = m.args?.[0]?.toLowerCase()
@@ -40,15 +58,23 @@ export default {
     }
 
     const aliases = formatAliases(plugin)
-    const source = plugin.source || 'Tidak diketahui'
     const description = plugin.description || 'Tidak ada deskripsi.'
+    const cat = formatCategoryName(plugin.category)
+    const access = getAccessLevel(plugin)
+    const helpText = plugin.help ? `${m.prefix}${plugin.command} ${plugin.help.replace(/`/g, '')}` : null
 
     const info =
-      `*Informasi Fitur*\n\n` +
-      `*Command:* \`${m.prefix}${plugin.command}\`\n` +
-      `*Alias:* ${aliases}\n` +
-      `*Deskripsi:*\n${description}\n` +
-      `*Directory:* \`${source}\``
+      `📋 BANTUAN COMMAND:\n` +
+      `\`\`\`\n` +
+      `Kategori : ${cat}\n` +
+      `Akses    : ${access}\`\`\`\n\n` +
+      `\`Nama Command :\`\n` +
+      `- ${plugin.command}\n\n` +
+      `\`Alias:\`\n` +
+      `${aliases}\n\n` +
+      `\`Deskripsi:\`\n` +
+      `${description}` +
+      (helpText ? `\n\n\`Contoh Format:\`\n> ${helpText}` : '')
 
     try {
       const opts = {
