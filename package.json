@@ -1,15 +1,17 @@
 {
   "name": "zapo-bot",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "type": "module",
   "description": "Bot wa zapo-js",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "test": "node --test test/*.test.js",
     "postinstall": "node patch.js"
   },
   "dependencies": {
     "@zapo-js/media-utils": "latest",
+    "@zapo-js/native": "latest",
     "@zapo-js/store-sqlite": "latest",
     "axios": "latest",
     "better-sqlite3": "latest",
@@ -21,6 +23,8 @@
     "zapo-js": "latest"
   },
   "trustedDependencies": [
-    "zapo-js"
+    "zapo-js",
+    "sharp",
+    "@zapo-js/native"
   ]
 }
