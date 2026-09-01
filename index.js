@@ -6,6 +6,7 @@ import { connectionHandler } from './src/connectionHandler.js'
 import { messageHandler } from './src/messageHandler.js'
 import { groupEventHandler } from './src/groupEventHandler.js'
 import { startThumbAutoRefresh } from './lib/thumbAutoRefresh.js'
+import { startMemoryMonitor } from './lib/memoryMonitor.js'
 
 let sock
 
@@ -25,6 +26,7 @@ try {
   await sock.connect()
 
   startThumbAutoRefresh(sock)
+  startMemoryMonitor(30000)
 
 } catch (err) {
   console.error(
